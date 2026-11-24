@@ -2022,6 +2022,7 @@ var WISHES=[
 var wishPhase=0,wt=0,wLines=[],wLine=0,wTyped=0,wChosen=null,wishEl=document.getElementById('wish'),wishList=document.getElementById('wishList');
 function buildWishList(){
   var pool=WISHES.slice();offered=[];
+  if(/[?&]all=1/.test(location.search)){offered=pool.slice();pool=[];}
   while(offered.length<3&&pool.length){offered.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);}
   wishList.textContent='';
   offered.forEach(function(w,i){
@@ -2063,7 +2064,7 @@ function wishKey(e){
   var k=e.key;
   if(k==='m'||k==='M'){toggleMute();return;}
   if(wishPhase===2||wishPhase===4){if(k==='Enter'||k===' '||k==='ArrowUp'){e.preventDefault();if(!e.repeat)wishAdvance();}return;}
-  if(wishPhase===3&&k>='1'&&k<='3'){e.preventDefault();chooseWish(parseInt(k,10)-1);}
+  if(wishPhase===3&&k>='1'&&k<='6'){e.preventDefault();chooseWish(parseInt(k,10)-1);}
 }
 function applyWish(w){
   var id=w.id,i;
