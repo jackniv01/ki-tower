@@ -6,7 +6,7 @@ Usage:  python3 src/build.py            -> builds index.html and bumps the servi
 import re, sys, os
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 G = os.path.join(ROOT, 'src', 'game')
-PARTS = ['a_head.html', 'b_core.js', 'c_world.js', 'd_hero.js', 'd3_sprites.js', 'e_rest.js']
+PARTS = ['a_head.html', 'b_core.js', 'c_world.js', 'd_hero.js', 'd3_sprites.js', 'd4_god_art.js', 'd5_god.js', 'e_rest.js']
 s = ''.join(open(os.path.join(G, p), encoding='utf-8').read() for p in PARTS)
 s = re.sub(r"window\.__kt=\{.*?\};\n", "", s, flags=re.S)  # strip test hook
 if '--test' in sys.argv:

@@ -92,7 +92,8 @@ function draw(){
   if(state==='play'||state==='wish')drawOrbs();
   drawWings();
   drawClone();drawFlyBack();
-  if(state!=='over'){if(giantT>0&&state==='play'){var gsc=giantScale();ctx.save();ctx.translate(P.x,P.y-cam);ctx.scale(gsc,gsc);drawHero(0,0,P,tr,chIdx);ctx.restore();}else drawHero(P.x,P.y-cam,P,tr,chIdx);}
+  if(fly&&fly.k==='tele'&&state==='play')drawTele();
+  else if(state!=='over'){if(giantT>0&&state==='play'){var gsc=giantScale();ctx.save();ctx.translate(P.x,P.y-cam);ctx.scale(gsc,gsc);drawHero(0,0,P,tr,chIdx);ctx.restore();}else drawHero(P.x,P.y-cam,P,tr,chIdx);}
   drawFlyFront();
   if(state==='play'||state==='wish')drawBuddy();
   if(state==='play')drawAbilityFx();
@@ -100,7 +101,7 @@ function draw(){
   ctx.restore();
   if(state==='wish')drawWishFx();
   if(P&&P.trans>36&&state==='play'&&SET.shake){ctx.fillStyle='rgba(255,255,255,'+(0.3*(P.trans-36)/14)+')';ctx.fillRect(0,0,W,H);}
-  if(state==='play'){drawHUD();syncSpecial();}
+  if(state==='play'||state==='tpick'){drawHUD();syncSpecial();}
   if(state==='play'||state==='menu'){drawOrbRow();drawChips();}
   if(state==='menu'){for(var i=0;i<prev.length;i++)drawPreview(prev[i].cv,i,i===chIdx?menuTier:0);}
 }
@@ -118,7 +119,7 @@ CH.forEach(function(c,i){
   var cnv=document.createElement('canvas');cnv.width=120;cnv.height=168;
   var sp=document.createElement('span');sp.textContent=c.name;
   b.appendChild(cnv);b.appendChild(sp);
-  b.addEventListener('click',function(){selectChar(i);});
+  b.addEventListener('click',function(){selectChar(i);});if(!charOK(i))b.style.display='none';
   charsEl.appendChild(b);prev.push({btn:b,cv:cnv});
 });
 selectChar(chIdx);
@@ -139,22 +140,24 @@ window.addEventListener('keydown',function(e){
     return;
   }
   if(typing)return;
-  if(state==='menu'&&(k==='ArrowLeft'||k==='ArrowRight')){e.preventDefault();selectChar((chIdx+(k==='ArrowRight'?1:CH.length-1))%CH.length);return;}
+  if(state==='menu'&&(k==='ArrowLeft'||k==='ArrowRight')){e.preventDefault();selectChar(nextChar(k==='ArrowRight'?1:-1));return;}
   if(k==='ArrowLeft'||k==='a'||k==='A'){keys.l=true;e.preventDefault();}
   else if(k==='ArrowRight'||k==='d'||k==='D'){keys.r=true;e.preventDefault();}
   else if(k===' '||k==='ArrowUp'||k==='w'||k==='W'){
     e.preventDefault();
     if(!e.repeat){if(state==='play')jumpBuf=9;else if(state==='over'&&overReady)startGame();}
   }
-  else if(k==='e'||k==='E'||k==='Shift'){e.preventDefault();if(state==='play'&&!e.repeat)specBuf=1;}
+  else if(k==='e'||k==='E'||k==='Shift'){e.preventDefault();if(state==='play'&&!e.repeat){specBuf=1;godHold=true;}}
+  else if((k==='t'||k==='T'||k==='q'||k==='Q')&&!e.repeat){e.preventDefault();openTele();}
   else if(k==='m'||k==='M')toggleMute();
 });
 window.addEventListener('keyup',function(e){
   var k=e.key;
   if(k==='ArrowLeft'||k==='a'||k==='A')keys.l=false;
   else if(k==='ArrowRight'||k==='d'||k==='D')keys.r=false;
+  else if(k==='e'||k==='E'||k==='Shift')godHold=false;
 });
-window.addEventListener('blur',function(){keys.l=false;keys.r=false;});
+window.addEventListener('blur',function(){keys.l=false;keys.r=false;godHold=false;});
 function bindBtn(id,on,off){
   var b=document.getElementById(id);
   b.addEventListener('pointerdown',function(e){e.preventDefault();try{b.setPointerCapture(e.pointerId);}catch(_){}on();b.classList.add('down');});
@@ -164,7 +167,14 @@ function bindBtn(id,on,off){
 }
 bindBtn('bL',function(){keys.l=true;},function(){keys.l=false;});
 bindBtn('bR',function(){keys.r=true;},function(){keys.r=false;});
-bindBtn('bS',function(){actx();if(state==='play')specBuf=1;},function(){});
+bindBtn('bS',function(){actx();if(state==='play'){specBuf=1;godHold=true;}},function(){godHold=false;});
+bindBtn('bT',function(){actx();openTele();},function(){});
+document.getElementById('t20').addEventListener('click',function(){closeTele(20);});
+document.getElementById('t50').addEventListener('click',function(){closeTele(50);});
+document.getElementById('t70').addEventListener('click',function(){closeTele(70);});
+document.getElementById('tNo').addEventListener('click',function(){closeTele(0);});
+document.getElementById('sCodeOk').addEventListener('click',tryCode);
+document.getElementById('sCode').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();e.stopPropagation();tryCode();}});
 bindBtn('bJ',function(){actx();if(state==='play')jumpBuf=9;else if(state==='paused')return;else if(state==='wish')wishAdvance();},function(){});
 stage.addEventListener('pointerdown',function(e){if(state==='wish'&&(wishPhase===2||wishPhase===4)&&e.target.tagName!=='BUTTON')wishAdvance();});
 document.getElementById('start').addEventListener('click',startGame);
@@ -177,12 +187,12 @@ document.getElementById('home').addEventListener('click',enterMenu);
 /* ---------- pause and settings ---------- */
 var pausedEl=document.getElementById('paused'),setEl=document.getElementById('settings'),pauseBtn=document.getElementById('pauseBtn'),gearBtn=document.getElementById('gearBtn'),setFrom='menu';
 function syncTop(){
-  pauseBtn.classList.toggle('hidden',state!=='play');var bs=document.getElementById('bS');if(bs)bs.classList.toggle('hidden',state!=='play');
+  pauseBtn.classList.toggle('hidden',state!=='play');var bs=document.getElementById('bS');if(bs)bs.classList.toggle('hidden',state!=='play');var bt=document.getElementById('bT');if(bt)bt.classList.toggle('hidden',state!=='play'||!isGod());
   gearBtn.classList.toggle('hidden',!(state==='menu'&&setEl.classList.contains('hidden')));
 }
 function pauseGame(){
   if(state!=='play')return;
-  state='paused';keys.l=false;keys.r=false;jumpBuf=0;
+  state='paused';keys.l=false;keys.r=false;jumpBuf=0;godHold=false;
   pausedEl.classList.remove('hidden');syncTop();
   var b=document.getElementById('resume');if(b)b.focus();
 }
@@ -315,6 +325,7 @@ var abCD=0,specBuf=0,monkeyT=0,monkeyDir=1,vineT=0,cloudT=0,dashT=0,cling=0,last
 function useSpecial(){
   if(state!=='play')return;
   var c=CH[chIdx],A=ABIL[c.type];
+  if(A.hold)return;
   if(A.auto){pushPop(abCD>0?'Revive is charging':'Revive is ready',P.x,P.y-110,A.col,22);return;}
   if(abCD>0||(c.type==='warrior'&&monkeyN>0)||(c.type==='cat'&&catN>0)){tone(180,0.08,'square',0.03);return;}
   abCD=A.cd;spMark();spawn('ring',P.x,P.y-40,0,0,24,5,A.col);tone(440,0.18,'triangle',0.05,880);vib(25);
@@ -399,7 +410,7 @@ function syncSpecial(){
   var A=ABIL[CH[chIdx].type],p=Math.round(100*(1-abCD/A.cd));
   var ty=CH[chIdx].type,cnt=ty==='warrior'?monkeyN:(ty==='cat'?catN:0),mk=cnt>0;if(mk)p=100;
   if(p!==lastP){lastP=p;b.style.setProperty('--p',p);b.classList.toggle('ready',p>=100&&!mk);}
-  var lb=mk?('x'+cnt):'Special';if(lb!==lastLb){lastLb=lb;b.querySelector('.lb').textContent=lb;}
+  var lb=mk?('x'+cnt):(A.hold?'Fly':'Special');if(lb!==lastLb){lastLb=lb;b.querySelector('.lb').textContent=lb;}
   b.style.setProperty('--c',A.col);
 }
 
@@ -719,7 +730,7 @@ function startRocket(n){
 }
 function endFly(){
   var f=fly;fly=null;
-  var tf=f.k==='rocket'?f.goal:floorsBest+1;ensurePlats(tf);var pl=plats[tf];
+  var tf=f.goal!=null?f.goal:floorsBest+1;ensurePlats(tf);var pl=plats[tf];
   if(f.k!=='rocket'){pl.x=WALL;pl.w=W-2*WALL;}
   P.y=pl.y;P.x=clamp(P.x,WALL+HW+6,W-WALL-HW-6);P.vy=0;P.vx=0;P.on=true;P.coy=7;
   cam=Math.min(cam,P.y-H*0.58);started=true;
@@ -735,6 +746,7 @@ function stepFly(){
     f.h.unshift({x:P.x+Math.sin(f.t*0.09)*14,y:P.y+18});if(f.h.length>34)f.h.pop();
     if(t%3===0)spawn('spark',P.x+rnd(-30,30),P.y+rnd(20,90),rnd(-1,1),rnd(1,3),rnd(16,26),2.4,t%2?'#ffd53d':'#ff9f1c');
     flyFloors();if(f.t>=f.dur)endFly();
+  }else if(f.k==='tele'){if(stepTele(f))return;
   }else{
     if(f.cd>0){
       f.cd--;var k=1-f.cd/96;P.y=f.base-46*Math.min(1,k*3);P.vx=0;P.vy=0;P.on=false;P.flip=false;
@@ -779,7 +791,7 @@ function drawClone(){
 }
 /* drawing for ride and rocket */
 function drawFlyBack(){
-  if(!fly||state!=='play')return;
+  if(!fly||state!=='play'||fly.k==='tele')return;
   // speed lines near the walls, never over the middle
   ctx.save();ctx.globalAlpha=0.55;ctx.strokeStyle='#ffffff';ctx.lineWidth=2;
   for(var i=0;i<6;i++){var yy=((t*22+i*137)%(H+120))-60,xx=i%2?WALL+8+(i*7)%20:W-WALL-8-(i*7)%20;ctx.beginPath();ctx.moveTo(xx,yy);ctx.lineTo(xx,yy+50);ctx.stroke();}

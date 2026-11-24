@@ -92,6 +92,9 @@ input[type=range]{flex:1;max-width:calc(var(--u)*170);height:calc(var(--u)*30);b
 .spbtn.ready .ic svg{stroke:var(--c)}
 .spbtn.ready{animation:sppulse 1.2s ease-in-out infinite}
 .spbtn.down{transform:scale(.92)}
+#bT{bottom:calc(var(--u)*158);--c:#b57bff}
+#bT .ic{opacity:1}#bT .ic svg{stroke:#e0c8ff}
+.telebtn{font-size:calc(var(--u)*30)!important}
 @keyframes sppulse{0%,100%{box-shadow:0 0 0 calc(var(--u)*2) var(--ink),0 0 calc(var(--u)*6) var(--c)}50%{box-shadow:0 0 0 calc(var(--u)*2) var(--ink),0 0 calc(var(--u)*22) var(--c)}}
 .big #pad{height:156px}
 .big #pad button{height:128px;font-size:36px}
@@ -127,6 +130,7 @@ input[type=range]{flex:1;max-width:calc(var(--u)*170);height:calc(var(--u)*30);b
     <button id="skipBtn" class="skipbtn hidden" aria-label="Skip">Skip <svg viewBox="0 0 24 24"><path d="M5 5l7 7-7 7M13 5l7 7-7 7"/></svg></button>
     <button id="pauseBtn" class="topbtn hidden" aria-label="Pause game"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button>
     <button id="bS" class="spbtn hidden" aria-label="Special ability"><span class="ic"></span><span class="lb">Special</span></button>
+    <button id="bT" class="spbtn hidden" aria-label="Teleport"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/></svg></span><span class="lb">Teleport</span></button>
     <button id="gearBtn" class="topbtn" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
     <section id="menu" class="screen">
       <h1>Ki Tower</h1>
@@ -187,6 +191,7 @@ input[type=range]{flex:1;max-width:calc(var(--u)*170);height:calc(var(--u)*30);b
         <div class="set"><span>Screen shake</span><button id="sShake" class="sw" role="switch" aria-checked="true" aria-label="Screen shake"></button></div>
         <div class="set"><span>Light effects<small>Smoother on older phones</small></span><button id="sLite" class="sw" role="switch" aria-checked="false" aria-label="Light effects"></button></div>
         <div class="set"><span>Big buttons<small>Touch controls</small></span><button id="sBig" class="sw" role="switch" aria-checked="false" aria-label="Big buttons"></button></div>
+        <div class="set"><span>Secret code<small id="sCodeMsg"></small></span><input id="sCode" maxlength="20" autocomplete="off" spellcheck="false" aria-label="Secret code" style="width:calc(var(--u)*110)"><button id="sCodeOk" class="btn alt" style="height:calc(var(--u)*36);font-size:calc(var(--u)*18);padding:0 calc(var(--u)*10)">OK</button></div>
         <button id="sBack" class="btn">Back</button>
       </div>
     </section>
@@ -195,6 +200,16 @@ input[type=range]{flex:1;max-width:calc(var(--u)*170);height:calc(var(--u)*30);b
       <div class="panel vlist" style="margin-top:calc(var(--u)*14)">
         <ol id="boardAll" class="board" style="max-height:calc(var(--u)*430);overflow-y:auto;touch-action:pan-y;-webkit-overflow-scrolling:touch"></ol>
         <button id="allBack" class="btn">Back</button>
+      </div>
+    </section>
+    <section id="tele" class="screen hidden" style="z-index:20;background:rgba(10,6,30,.6)">
+      <h1 class="mid">Teleport</h1>
+      <div class="panel vlist" style="margin-top:calc(var(--u)*18)">
+        <h2 style="text-align:center">How many floors up?</h2>
+        <button id="t20" class="btn telebtn">20 floors</button>
+        <button id="t50" class="btn telebtn">50 floors</button>
+        <button id="t70" class="btn telebtn">70 floors</button>
+        <button id="tNo" class="btn alt">Cancel</button>
       </div>
     </section>
     <section id="wish" class="screen hidden" style="justify-content:flex-end;padding-bottom:calc(var(--u)*18)">

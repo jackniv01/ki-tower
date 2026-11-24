@@ -1,6 +1,7 @@
 
 /* ---------- characters: detailed anime style ---------- */
 function exprOf(o){
+  if(o===P&&godSpd>0)return 'kiai';
   if(o.trans>0)return 'kiai';
   if(o.win>0)return 'win';
   if(o.flip)return 'flip';
