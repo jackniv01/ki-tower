@@ -19,11 +19,24 @@ function godFlyStep(){
 }
 /* teleport: pick 30, 50 or 100 floors */
 var teleEl=document.getElementById('tele');
+/* gate art (Grok): each button gets a span that shows its ring from the atlas, a bit see-through */
+(function(){
+  var ids=['t30','t50','t100'],k=0.42,Wt=0,Ht=0,i;
+  for(i=0;i<3;i++){var f=GATES.fr[i];Wt=Math.max(Wt,f[0]+f[2]);Ht=Math.max(Ht,f[3]);}
+  function u(v){return 'calc(var(--u)*'+(v*k).toFixed(2)+')';}
+  for(i=0;i<3;i++){
+    var f=GATES.fr[i],b=document.getElementById(ids[i]),sp=document.createElement('span');sp.className='gimg';
+    sp.style.left='calc(var(--u)*29 - '+u(f[4]).slice(5);sp.style.top='calc(var(--u)*29 - '+u(f[5]).slice(5);
+    sp.style.width=u(f[2]);sp.style.height=u(f[3]);
+    sp.style.backgroundImage="url('"+GATES.src+"')";sp.style.backgroundPosition=u(-f[0])+' 0';sp.style.backgroundSize=u(Wt)+' '+u(Ht);
+    b.insertBefore(sp,b.firstChild);b.classList.add('art');
+  }
+})();
 function openTele(){
   if(state!=='play'||fly||!isGod())return;
   godHold=false;state='tpick';keys.l=false;keys.r=false;jumpBuf=0;
   /* place 3 gates around the hero: left, above, right */
-  var hx=clamp(P.x,130,W-130),hy=clamp(P.y-cam-60,170,H-200),pos=[[hx-78,hy+6],[hx,hy-72],[hx+78,hy+6]],ids=['t30','t50','t100'];
+  var hx=clamp(P.x,130,W-130),hy=clamp(P.y-cam-60,170,H-200),pos=[[hx-86,hy+8],[hx,hy-74],[hx+86,hy+8]],ids=['t30','t50','t100'];
   for(var i=0;i<3;i++){var b=document.getElementById(ids[i]);b.style.left='calc(var(--u)*'+pos[i][0]+')';b.style.top='calc(var(--u)*'+pos[i][1]+')';}
   teleEl.style.setProperty('--hx',(P.x/W*100)+'%');teleEl.style.setProperty('--hy',((P.y-cam-45)/H*100)+'%');
   teleEl.classList.remove('hidden');syncTop();tone(880,0.12,'sine',0.03,1320);

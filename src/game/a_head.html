@@ -100,6 +100,9 @@ input[type=range]{flex:1;max-width:calc(var(--u)*170);height:calc(var(--u)*30);b
 .gate b{font-weight:400;font-size:calc(var(--u)*24);line-height:1;color:#fff2a8}
 .gate small{font-size:calc(var(--u)*9);letter-spacing:calc(var(--u)*.5);color:#cdb8f0}
 .gate:active{transform:scale(.9)}
+.gate.art{background:none;border:none;box-shadow:none}
+.gate .gimg{position:absolute;background-repeat:no-repeat;opacity:.68;pointer-events:none}
+.gate.art b,.gate.art small{position:relative;text-shadow:0 0 calc(var(--u)*4) #000,0 0 calc(var(--u)*8) rgba(20,8,50,.9)}
 .gateX{position:absolute;top:calc(var(--u)*14);right:calc(var(--u)*14);width:calc(var(--u)*36);height:calc(var(--u)*36);border-radius:50%;border:calc(var(--u)*1.5) solid rgba(224,200,255,.5);background:rgba(20,14,48,.6);color:#fff;font-size:calc(var(--u)*16);cursor:pointer}
 @keyframes gin{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
 @keyframes sppulse{0%,100%{box-shadow:0 0 0 calc(var(--u)*2) var(--ink),0 0 calc(var(--u)*6) var(--c)}50%{box-shadow:0 0 0 calc(var(--u)*2) var(--ink),0 0 calc(var(--u)*22) var(--c)}}
