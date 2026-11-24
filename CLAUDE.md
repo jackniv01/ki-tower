@@ -13,7 +13,7 @@ Ki Tower is Jacob's browser climbing game (Icy Tower style, anime fighters). It 
 - `index.html` – the built game (what players load). **Do not edit by hand.** Build it from `src/game/`.
 - `src/game/` – game source, joined in this order:
   `a_head.html` (CSS + HTML screens), `b_core.js` (fighters, abilities, settings, sound and music, shared scoreboard, physics, `die()`),
-  `c_world.js` (11 worlds, decor, platforms), `d_hero.js` (fallback drawn heroes), `d3_sprites.js` (fighter sprite atlases, base64),
+  `c_world.js` (11 worlds, decor, platforms), `d_hero.js` (fallback drawn heroes), `d3_sprites.js` (fighter sprite atlases, base64), `d4_god_art.js` + `d5_god.js` (secret fighter Sonofgod),
   `e_rest.js` (effects, HUD, abilities, orbs, wishes, dragons, Beerus ride, skip button, settings, input, main loop).
 - `src/build.py` – `python3 src/build.py` builds `index.html` and bumps the cache name in `sw.js`.
   `python3 src/build.py --test some-test-folder` builds a test copy that does NOT save scores.
@@ -29,6 +29,7 @@ Ki Tower is Jacob's browser climbing game (Icy Tower style, anime fighters). It 
 
 ## Game content (current)
 - Fighters: Jacob (Monkey Leap, 4 wall jumps), Anna (auto Revive), Adam (Vine Climb), Jonny (Green Haze cloud), Lior (Fashion Wings), Daniella (Cat Jumps, 3 air jumps). Hair color changes with power level.
+- Secret fighter **Sonofgod** (only Jacob): unlocked by a secret code in Settings (only its SHA-256 hash is in the code, never the code itself). Hold Fly to fly faster and faster, Teleport button opens 3 Grok gate rings (30/50/100 floors), the screen never scrolls by itself, his scores are not saved. Code in `src/game/d5_god.js`, art in `src/art/god/` (`make_js.py` builds `d4_god_art.js`).
 - Worlds every 100 floors, 11 in total (Neon City 700, Thunder Storm 800, Black Hole 900, Pure Energy 1000+, celebration at 1000). Safe full-width step every 50 floors.
 - 7 wish orbs (Grok art). Collecting all calls **Aurelis** (golden Eastern dragon). He offers 3 random wishes from: Double points, Little dragon, Dragon ride on **Beerus** (blue storm dragon, 15 s), Rocket (50 floors), Shadow clone (combo bonus x2), Surprise. Skip button in the top right.
 - Music that grows with height, Web Audio sound effects, Music switch in settings.
