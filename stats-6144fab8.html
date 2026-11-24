@@ -70,15 +70,15 @@ function draw(){
   var g={},tot=0;
   rows.forEach(function(r){if(r.t<from)return;var k=r.c||'?';g[k]=g[k]||{n:0,best:0,bf:0,sf:0};var o=g[k];o.n++;o.sf+=r.fl;if(r.s>o.best)o.best=r.s;if(r.fl>o.bf)o.bf=r.fl;tot++;});
   ORDER.forEach(function(k){if(!g[k])g[k]={n:0,best:0,bf:0,sf:0};});
-  var keys=Object.keys(g).sort(function(a,b){return g[b].n-g[a].n||(a==='?')-(b==='?');});
+  var keys=Object.keys(g).sort(function(a,b){return ((a==='?')-(b==='?'))||(g[b].n-g[a].n);});
   if(!g['?']||!g['?'].n)keys=keys.filter(function(k){return k!=='?';});
   document.getElementById('tot').textContent=fmt(tot);
   var L=document.getElementById('list');L.textContent='';
   keys.forEach(function(k,i){
-    var o=g[k],p=tot?Math.round(o.n/tot*100):0,row=document.createElement('div');row.className='row';
+    var o=g[k],rk=k==='?'?'–':String(keys.filter(function(x){return x!=='?';}).indexOf(k)+1),p=tot?Math.round(o.n/tot*100):0,row=document.createElement('div');row.className='row';
     var name=k==='?'?'לא ידוע':k,col=COL[k]||'#8a84b8';
     row.innerHTML='<div class="top"><span class="rk"></span><span class="nm"></span><span class="pc"></span></div><div class="bar"><i></i></div><div class="meta"><span class="a"></span><span class="b"></span><span class="c"></span></div>';
-    row.querySelector('.rk').textContent=i+1;row.querySelector('.nm').textContent=name;row.querySelector('.pc').textContent=p+'%';
+    row.querySelector('.rk').textContent=rk;row.querySelector('.nm').textContent=name;row.querySelector('.pc').textContent=p+'%';
     var bar=row.querySelector('.bar i');bar.style.width=p+'%';bar.style.background=col;
     row.querySelector('.a').textContent=fmt(o.n)+' משחקים';
     row.querySelector('.b').textContent='שיא: '+fmt(o.best);
