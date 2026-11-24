@@ -38,7 +38,7 @@ var ABIL={
    icon:'<svg viewBox="0 0 24 24"><path d="M12 21v-5"/><path d="M12 16c0-5 0-9 0-13 1.6 3.5 1.6 8.5 0 13z"/><path d="M12 16c-1.6-4-4.4-7-7.5-8.5 0.8 3.8 3.8 7 7.5 8.5z"/><path d="M12 16c1.6-4 4.4-7 7.5-8.5-0.8 3.8-3.8 7-7.5 8.5z"/><path d="M12 16c-2.6-1.4-5.6-1.8-8.5-1 2.2 1.6 5.4 1.8 8.5 1z"/><path d="M12 16c2.6-1.4 5.6-1.8 8.5-1-2.2 1.6-5.4 1.8-8.5 1z"/></svg>'},
  cat:{name:'Cat Jumps',desc:'Jump 3 extra times in mid-air, leaving glowing paw prints.',cd:600,col:'#a8e63d',
    icon:'<svg viewBox="0 0 24 24"><ellipse cx="12" cy="16" rx="4.6" ry="3.8"/><circle cx="6" cy="10.5" r="2"/><circle cx="9.6" cy="6.5" r="2"/><circle cx="14.4" cy="6.5" r="2"/><circle cx="18" cy="10.5" r="2"/></svg>'},
- god:{name:'Divine Flight',desc:'Hold to fly up, faster and faster. The screen never climbs by itself. Teleport button: jump 20, 50 or 70 floors.',cd:1,col:'#ffd53d',hold:true,
+ god:{name:'Divine Flight',desc:'Hold to fly up, faster and faster. The screen never climbs by itself. Teleport button: jump 30, 50 or 100 floors.',cd:1,col:'#ffd53d',hold:true,
    icon:'<svg viewBox="0 0 24 24"><ellipse cx="12" cy="4.5" rx="5" ry="1.8"/><path d="M12 21V9M7 13l5-5 5 5"/></svg>'},
  beast:{name:'Fashion Wings',desc:'Sparkly wings: glide down slowly and jump again in the air.',cd:720,col:'#ff9ad5',
    icon:'<svg viewBox="0 0 24 24"><path d="M12 12C9 5 4 4 2.5 6.5 2 10 6 13 12 12zM12 12c3-7 8-8 9.5-5.5.5 3.5-3.5 6.5-9.5 5.5zM12 12c-3 3-6 6-4.5 8 2 1 4-3 4.5-8zM12 12c3 3 6 6 4.5 8-2 1-4-3-4.5-8z"/></svg>'}

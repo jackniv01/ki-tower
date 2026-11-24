@@ -17,12 +17,16 @@ function godFlyStep(){
   if(godSpd>=GOD_MAX&&t%20===0)shk=Math.max(shk,4);
   return true;
 }
-/* teleport: pick 20, 50 or 70 floors */
+/* teleport: pick 30, 50 or 100 floors */
 var teleEl=document.getElementById('tele');
 function openTele(){
   if(state!=='play'||fly||!isGod())return;
   godHold=false;state='tpick';keys.l=false;keys.r=false;jumpBuf=0;
-  teleEl.classList.remove('hidden');syncTop();
+  /* place 3 gates around the hero: left, above, right */
+  var hx=clamp(P.x,130,W-130),hy=clamp(P.y-cam-60,170,H-200),pos=[[hx-112,hy+10],[hx,hy-110],[hx+112,hy+10]],ids=['t30','t50','t100'];
+  for(var i=0;i<3;i++){var b=document.getElementById(ids[i]);b.style.left='calc(var(--u)*'+pos[i][0]+')';b.style.top='calc(var(--u)*'+pos[i][1]+')';}
+  teleEl.style.setProperty('--hx',(P.x/W*100)+'%');teleEl.style.setProperty('--hy',((P.y-cam-45)/H*100)+'%');
+  teleEl.classList.remove('hidden');syncTop();sfx.power();
 }
 function closeTele(n){
   if(state!=='tpick')return;
