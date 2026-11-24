@@ -436,7 +436,7 @@ function pushShared(entry){
   if(!entry||typeof fetch!=='function')return;
   var nm=String(entry.name||'?').trim().slice(0,14)||'?';
   var id='s'+(entry.id||Date.now())+'_'+Math.random().toString(36).slice(2,8);
-  var body={writes:[{update:{name:FB_DOCS+'/scores/'+id,fields:{name:{stringValue:nm},score:{integerValue:String(Math.max(0,Math.min(1e8,Math.round(entry.score||0))))},floor:{integerValue:String(Math.max(0,Math.min(1e5,Math.round(entry.floor||0))))},combo:{integerValue:String(Math.round(entry.combo||0))}}},
+  var body={writes:[{update:{name:FB_DOCS+'/scores/'+id,fields:{name:{stringValue:nm},score:{integerValue:String(Math.max(0,Math.min(1e8,Math.round(entry.score||0))))},floor:{integerValue:String(Math.max(0,Math.min(1e5,Math.round(entry.floor||0))))},combo:{integerValue:String(Math.round(entry.combo||0))},char:{stringValue:String((CH[chIdx]&&CH[chIdx].name)||'?').slice(0,12)}}},
     updateTransforms:[{fieldPath:'ts',setToServerValue:'REQUEST_TIME'}],currentDocument:{exists:false}}]};
   if(sharedList){var x=sanitizeEntry(entry);if(x){sharedList.push(x);sharedList.sort(function(a,b){return b.score-a.score;});sharedList=sharedList.slice(0,50);refreshBoards();}}
   fetch(FB_URL+':commit?key='+FB_KEY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})

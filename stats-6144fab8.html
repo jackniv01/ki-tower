@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Ki Tower – סטטיסטיקה</title>
+<style>
+  :root{--bg:#120e2a;--card:#211a44;--line:#3a3070;--ink:#f4f2ff;--mut:#a9a3d6;--gold:#ffd53d}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;padding:20px 16px 40px}
+  main{max-width:520px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 4px;color:var(--gold)}
+  .sub{color:var(--mut);margin:0 0 18px;font-size:14px}
+  .tabs{display:flex;gap:8px;margin-bottom:14px}
+  .tabs button{flex:1;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
+  .tabs button[aria-pressed=true]{background:var(--gold);color:#1a1433;border-color:var(--gold);font-weight:700}
+  .total{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+  .total b{font-size:28px;color:var(--gold)}
+  .row{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+  .top{display:flex;align-items:center;gap:10px}
+  .rk{width:26px;height:26px;border-radius:50%;background:var(--line);display:grid;place-items:center;font-weight:700;font-size:14px;flex:none}
+  .row:first-child .rk{background:var(--gold);color:#1a1433}
+  .nm{font-weight:700;font-size:18px;flex:1}
+  .pc{font-weight:700;font-size:18px}
+  .bar{height:10px;border-radius:6px;background:#2d2560;margin:8px 0 6px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:6px}
+  .meta{color:var(--mut);font-size:13px;display:flex;gap:14px;flex-wrap:wrap}
+  .note{color:var(--mut);font-size:13px;margin-top:16px}
+  .err{color:#ff8a9a}
+  #reload{width:100%;margin-top:14px;padding:12px;border-radius:12px;border:none;background:#6fa8ff;color:#10122a;font:inherit;font-weight:700;cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+  <h1>איזו דמות הכי פופולרית?</h1>
+  <p class="sub">דף סודי – רק מי שיש לו את הקישור רואה אותו.</p>
+  <div class="tabs" role="group" aria-label="תקופה">
+    <button data-d="0" aria-pressed="true">מאז ומעולם</button>
+    <button data-d="7" aria-pressed="false">7 ימים</button>
+    <button data-d="1" aria-pressed="false">היום</button>
+  </div>
+  <div class="total"><span>משחקים שנספרו</span><b id="tot">…</b></div>
+  <div id="list"></div>
+  <button id="reload">רענן</button>
+  <p class="note">נספרים רק משחקים עם נקודות. הספירה לפי דמות התחילה ב-24.11.2026, ומשחקים מלפני כן מופיעים בשם "לא ידוע".</p>
+</main>
+<script>
+var KEY='AIzaSyAsYyEcogB2vyxx2zId6rvE0oNgjlNujTk';
+var URL_Q='https://firestore.googleapis.com/v1/projects/ki-tower/databases/(default)/documents:runQuery?key='+KEY;
+var COL={Jacob:'#1aa6a0',Anna:'#ff4f9a',Adam:'#7fd66b',Jonny:'#45c8ff',Lior:'#ff9f1c',Daniella:'#c99cff'};
+var ORDER=['Jacob','Anna','Adam','Jonny','Lior','Daniella'];
+var rows=[],days=0;
+function num(v){return v?Number(v.integerValue!=null?v.integerValue:(v.doubleValue||0)):0;}
+function fmt(n){return Number(n).toLocaleString('en-US');}
+function load(){
+  document.getElementById('tot').textContent='…';
+  fetch(URL_Q,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({structuredQuery:{from:[{collectionId:'scores'}],orderBy:[{field:{fieldPath:'ts'},direction:'DESCENDING'}],limit:3000}})})
+  .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+  .then(function(res){
+    rows=[];
+    res.forEach(function(x){var d=x&&x.document;if(!d||!d.fields)return;var f=d.fields;
+      rows.push({c:f.char&&f.char.stringValue||'',s:num(f.score),fl:num(f.floor),t:f.ts&&f.ts.timestampValue?Date.parse(f.ts.timestampValue):0});});
+    draw();
+  }).catch(function(){document.getElementById('list').innerHTML='<p class="err">לא הצלחתי לטעון. בדוק חיבור לאינטרנט ולחץ רענן.</p>';document.getElementById('tot').textContent='–';});
+}
+function draw(){
+  var from=days?Date.now()-days*86400000:0;
+  if(days===1){var d=new Date();d.setHours(0,0,0,0);from=d.getTime();}
+  var g={},tot=0;
+  rows.forEach(function(r){if(r.t<from)return;var k=r.c||'?';g[k]=g[k]||{n:0,best:0,bf:0,sf:0};var o=g[k];o.n++;o.sf+=r.fl;if(r.s>o.best)o.best=r.s;if(r.fl>o.bf)o.bf=r.fl;tot++;});
+  ORDER.forEach(function(k){if(!g[k])g[k]={n:0,best:0,bf:0,sf:0};});
+  var keys=Object.keys(g).sort(function(a,b){return g[b].n-g[a].n||(a==='?')-(b==='?');});
+  if(!g['?']||!g['?'].n)keys=keys.filter(function(k){return k!=='?';});
+  document.getElementById('tot').textContent=fmt(tot);
+  var L=document.getElementById('list');L.textContent='';
+  keys.forEach(function(k,i){
+    var o=g[k],p=tot?Math.round(o.n/tot*100):0,row=document.createElement('div');row.className='row';
+    var name=k==='?'?'לא ידוע':k,col=COL[k]||'#8a84b8';
+    row.innerHTML='<div class="top"><span class="rk"></span><span class="nm"></span><span class="pc"></span></div><div class="bar"><i></i></div><div class="meta"><span class="a"></span><span class="b"></span><span class="c"></span></div>';
+    row.querySelector('.rk').textContent=i+1;row.querySelector('.nm').textContent=name;row.querySelector('.pc').textContent=p+'%';
+    var bar=row.querySelector('.bar i');bar.style.width=p+'%';bar.style.background=col;
+    row.querySelector('.a').textContent=fmt(o.n)+' משחקים';
+    row.querySelector('.b').textContent='שיא: '+fmt(o.best);
+    row.querySelector('.c').textContent='ממוצע קומות: '+(o.n?Math.round(o.sf/o.n):0);
+    L.appendChild(row);
+  });
+}
+document.querySelectorAll('.tabs button').forEach(function(b){b.addEventListener('click',function(){
+  days=Number(b.getAttribute('data-d'));document.querySelectorAll('.tabs button').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false');});draw();});});
+document.getElementById('reload').addEventListener('click',load);
+load();
+</script>
+</body>
+</html>
