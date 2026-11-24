@@ -50,6 +50,9 @@
   td.num,th.num{text-align:left;direction:ltr}
   .note{color:var(--mut);font-size:13px;margin-top:16px}
   .err{color:#ff8a9a}
+  .kpis.one{grid-template-columns:1fr}
+  .mini{color:var(--mut);font-size:12px;margin:8px 0 0}
+  .demo{background:#3a2a10;border:1px solid var(--gold);color:var(--gold);border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:12px;text-align:center}
   .who{display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--mut);font-size:13px;margin-bottom:12px}
   .who .btn.ghost{width:auto;padding:6px 12px}
 </style>
@@ -101,8 +104,40 @@
     <h2>הדמויות</h2>
     <div id="list"></div>
 
+    <h2>שחקנים חוזרים</h2>
+    <div class="kpis">
+      <div class="kpi"><b id="kRet">…</b><span>חזרו יותר מפעם אחת</span></div>
+      <div class="kpi"><b id="kRetAvg">…</b><span>משחקים לשחקן חוזר</span></div>
+      <div class="kpi"><b id="kNew">…</b><span>חדשים ב-7 ימים</span></div>
+    </div>
+
+    <h2>משך משחק</h2>
+    <div class="kpis one"><div class="kpi"><b id="kDur">…</b><span>ממוצע בדקות</span></div></div>
+    <div class="card" id="cDur" style="margin-top:8px"></div>
+
+    <h2>נקודות נפילה נפוצות</h2>
+    <div class="card" id="cFalls"></div>
+
+    <h2>יכולות מיוחדות – פירוט</h2>
+    <div class="card"><table><thead><tr><th>דמות</th><th class="num">שימושים</th><th class="num">הצלחה</th></tr></thead><tbody id="tSpOk"></tbody></table>
+      <p class="mini">הצלחה = השחקן עלה עוד 20 קומות אחרי השימוש לפני שנפל.</p></div>
+    <div class="card" style="margin-top:8px"><p class="mini" style="margin:0 0 6px">כמה פעמים השתמשו ביכולת במשחק עד הנפילה:</p><div id="cSpUses"></div></div>
+
+    <h2>מכשירים</h2>
+    <div class="card" id="cDev"></div>
+
+    <h2>קומבואים</h2>
+    <div class="kpis one"><div class="kpi"><b id="kCombo">…</b><span>ממוצע הקומבו הכי ארוך</span></div></div>
+    <div class="card" id="cCombo" style="margin-top:8px"></div>
+
+    <h2>משאלות הדרקון – ממוצע קומות</h2>
+    <div class="card"><table><thead><tr><th>משאלה</th><th class="num">משחקים</th><th class="num">ממוצע קומות</th></tr></thead><tbody id="tWishFl"></tbody></table></div>
+
+    <h2>התקדמות לאורך זמן</h2>
+    <div class="card"><p class="mini" style="margin:0 0 6px">ממוצע קומות בכל יום, 14 הימים האחרונים</p><div id="cProg" class="cols"></div></div>
+
     <button id="reload" class="btn" style="margin-top:14px">רענן</button>
-    <p class="note">נספרים רק משחקים עם נקודות. השעות לפי השעון בטלפון שלך. הספירה לפי דמות התחילה ב-24.11.2026, ומשחקים מלפני כן מופיעים בשם "לא ידוע". יכולת ומשאלות נספרות רק ממשחקים מ-24.11.2026 בצהריים והלאה.</p>
+    <p class="note">נספרים רק משחקים עם נקודות. השעות לפי השעון בטלפון שלך. הספירה לפי דמות התחילה ב-24.11.2026, ומשחקים מלפני כן מופיעים בשם "לא ידוע". יכולת ומשאלות נספרות רק ממשחקים מ-24.11.2026 בצהריים והלאה. שחקנים חוזרים, משך משחק, מכשירים והצלחת יכולת נספרים רק מהעדכון הבא של המשחק והלאה.</p>
   </div>
 </main>
 <script type="module">
@@ -116,7 +151,7 @@ const URL_Q='https://firestore.googleapis.com/v1/projects/ki-tower/databases/(de
 const COL={Jacob:'#1aa6a0',Anna:'#ff4f9a',Adam:'#7fd66b',Jonny:'#45c8ff',Lior:'#ff9f1c',Daniella:'#c99cff'};
 const ORDER=['Jacob','Anna','Adam','Jonny','Lior','Daniella'];
 const WORLDS=['Emerald Peaks','Frost Spires','Crystal Hollow','Ember Core','Sea of Clouds','Sky Temple','Starfield','Neon City','Thunder Storm','Black Hole','Pure Energy'];
-const WISH={double:'נקודות כפולות',power:'כוח מקסימלי',shield:'מעגל הגנה',buddy:'דרקון קטן',hijump:'קפיצות גבוהות'};
+const WISH={double:'נקודות כפולות',buddy:'דרקון קטן',ride:'רכיבה על Beerus',rocket:'טיל שיגור',clone:'שיבוט צל',s_triple:'הפתעה: נקודות פי 3',s_combo20:'הפתעה: קומבו 20',s_rocket100:'הפתעה: טיל 100 קומות',s_ride25:'הפתעה: רכיבה ארוכה',s_giant:'הפתעה: מצב ענק',s_tiny:'הפתעה: קפיצות קטנות',power:'כוח מקסימלי (ישן)',shield:'מעגל הגנה (ישן)',hijump:'קפיצות גבוהות (ישן)'};
 const $=id=>document.getElementById(id);
 let rows=[],days=0;
 
@@ -148,7 +183,7 @@ async function load(){
     if(!r.ok)throw new Error(r.status);
     const res=await r.json();rows=[];
     res.forEach(x=>{const d=x&&x.document;if(!d||!d.fields)return;const f=d.fields;
-      rows.push({n:(f.name&&f.name.stringValue)||'?',c:(f.char&&f.char.stringValue)||'',s:num(f.score),fl:num(f.floor),cb:num(f.combo),sp:f.sp?num(f.sp):null,w:f.wish?f.wish.stringValue:null,t:f.ts&&f.ts.timestampValue?Date.parse(f.ts.timestampValue):0});});
+      rows.push({n:(f.name&&f.name.stringValue)||'?',c:(f.char&&f.char.stringValue)||'',s:num(f.score),fl:num(f.floor),cb:num(f.combo),sp:f.sp?num(f.sp):null,w:f.wish?f.wish.stringValue:null,ok:f.spok?num(f.spok):null,du:f.dur?num(f.dur):null,dv:f.dev?f.dev.stringValue:null,id:f.did?f.did.stringValue:null,t:f.ts&&f.ts.timestampValue?Date.parse(f.ts.timestampValue):0});});
     draw();
   }catch(e){$('list').innerHTML='<p class="err">לא הצלחתי לטעון. לחץ רענן.</p>';$('kGames').textContent='–';}
 }
@@ -172,7 +207,7 @@ function draw(){
   for(let i=nd-1;i>=0;i--){const s=new Date(today);s.setDate(s.getDate()-i);const e=new Date(s);e.setDate(e.getDate()+1);
     dd.push({l:s.getDate()+'/'+(s.getMonth()+1),v:rows.filter(r=>r.t>=s.getTime()&&r.t<e.getTime()).length});}
   cols($('cDays'),dd);
-  const hh=Array.from({length:24},(_,h)=>({l:h%3===0?String(h):'',v:0}));
+  const hh=Array.from({length:24},(_,h)=>({l:h%3===0?String(h):'\u00a0',v:0}));
   R.forEach(r=>{if(r.t)hh[new Date(r.t).getHours()].v++;});cols($('cHours'),hh);
   const pl={};R.forEach(r=>{const k=r.n.trim().toLowerCase();const o=pl[k]=pl[k]||{n:r.n.trim(),g:0,b:0,f:0};o.g++;if(r.s>o.b)o.b=r.s;if(r.fl>o.f)o.f=r.fl;});
   const pls=Object.values(pl).sort((a,b)=>b.g-a.g||b.b-a.b).slice(0,10);
@@ -203,10 +238,61 @@ function draw(){
     const bar=row.querySelector('.bar i');bar.style.width=p+'%';bar.style.background=COL[k]||'#8a84b8';
     const m=row.querySelectorAll('.meta span');m[0].textContent=fmt(o.n)+' משחקים';m[1].textContent='שיא: '+fmt(o.best);
     m[2].textContent='ממוצע קומות: '+(o.n?Math.round(o.sf/o.n):0);m[3].textContent='קומבו הכי ארוך: '+o.cb;L.appendChild(row);});
+
+  // 5 returning players (by device id)
+  const RI=R.filter(r=>r.id&&r.id!=='none');const byId={};RI.forEach(r=>{byId[r.id]=(byId[r.id]||0)+1;});
+  const ids=Object.keys(byId),ret=ids.filter(k=>byId[k]>1);
+  $('kRet').textContent=ids.length?Math.round(ret.length/ids.length*100)+'%':'–';
+  $('kRetAvg').textContent=ret.length?(ret.reduce((a,k)=>a+byId[k],0)/ret.length).toFixed(1):'–';
+  const first={};rows.forEach(r=>{if(r.id&&r.id!=='none'&&r.t&&(!first[r.id]||r.t<first[r.id]))first[r.id]=r.t;});
+  const fk=Object.keys(first);$('kNew').textContent=fk.length?fmt(fk.filter(k=>first[k]>=Date.now()-7*86400000).length):'–';
+  // 6 duration
+  const RD=R.filter(r=>r.du!==null);
+  $('kDur').textContent=RD.length?(RD.reduce((a,r)=>a+r.du,0)/RD.length/60).toFixed(1):'–';
+  hbars($('cDur'),RD.length?[{l:'קצר (עד 30 ש\')',v:RD.filter(r=>r.du<30).length},{l:'בינוני (עד 2 ד\')',v:RD.filter(r=>r.du>=30&&r.du<120).length},{l:'ארוך (מעל 2 ד\')',v:RD.filter(r=>r.du>=120).length}]:[],RD.length);
+  // 7 common falls, 10-floor ranges, top 5
+  const fall={};R.forEach(r=>{const k=Math.floor(r.fl/10)*10;fall[k]=(fall[k]||0)+1;});
+  hbars($('cFalls'),Object.keys(fall).map(Number).sort((a,b)=>fall[b]-fall[a]).slice(0,5).map(k=>({l:'קומות '+k+'–'+(k+9),v:fall[k]})),R.length);
+  // 8 ability success
+  const RO=R.filter(r=>r.ok!==null&&r.sp!==null&&r.c);const og={};
+  RO.forEach(r=>{const o=og[r.c]=og[r.c]||{u:0,k:0};o.u+=r.sp;o.k+=Math.min(r.ok,r.sp);});
+  const ok=ORDER.filter(k=>og[k]);
+  $('tSpOk').innerHTML=ok.length?ok.map(k=>'<tr><td>'+k+'</td><td class="num">'+fmt(og[k].u)+'</td><td class="num">'+(og[k].u?Math.round(og[k].k/og[k].u*100)+'%':'–')+'</td></tr>').join(''):'<tr><td colspan="3" style="color:var(--mut)">אין עדיין נתונים</td></tr>';
+  const RS2=R.filter(r=>r.sp!==null);
+  hbars($('cSpUses'),RS2.length?[{l:'אף פעם',v:RS2.filter(r=>r.sp===0).length},{l:'פעם אחת',v:RS2.filter(r=>r.sp===1).length},{l:'2–3 פעמים',v:RS2.filter(r=>r.sp>=2&&r.sp<=3).length},{l:'4 ומעלה',v:RS2.filter(r=>r.sp>=4).length}]:[],RS2.length);
+  // 9 devices
+  const RV=R.filter(r=>r.dv);const DN={ios:'אייפון',android:'אנדרואיד',pc:'מחשב'};
+  hbars($('cDev'),RV.length?Object.keys(DN).map(k=>({l:DN[k],v:RV.filter(r=>r.dv===k).length})):[],RV.length);
+  // 10 combos
+  $('kCombo').textContent=R.length?(R.reduce((a,r)=>a+r.cb,0)/R.length).toFixed(1):'–';
+  const cbl=[10,20,50].map(n=>({l:'קומבו '+n+'+',v:R.filter(r=>r.cb>=n).length}));
+  $('cCombo').innerHTML=R.length?cbl.map(x=>'<div class="hbar"><span>'+x.l+'</span><span class="t"><i style="width:'+(x.v/R.length*100)+'%"></i></span><span class="n">'+Math.round(x.v/R.length*100)+'%</span></div>').join(''):'<p style="color:var(--mut);margin:0">אין עדיין נתונים</p>';
+  // 11 wishes vs floors
+  const RW2=R.filter(r=>r.w!==null);const wf={};
+  RW2.forEach(r=>{const ws=r.w.split(',').filter(Boolean);(ws.length?ws:['_none']).forEach(k=>{const o=wf[k]=wf[k]||{n:0,f:0};o.n++;o.f+=r.fl;});});
+  const wkeys=Object.keys(WISH).filter(k=>wf[k]).sort((a,b)=>wf[b].f/wf[b].n-wf[a].f/wf[a].n);if(wf._none)wkeys.push('_none');
+  $('tWishFl').innerHTML=wkeys.length?wkeys.map(k=>'<tr><td>'+(k==='_none'?'<span style="color:var(--mut)">בלי משאלה</span>':WISH[k])+'</td><td class="num">'+fmt(wf[k].n)+'</td><td class="num">'+Math.round(wf[k].f/wf[k].n)+'</td></tr>').join(''):'<tr><td colspan="3" style="color:var(--mut)">אין עדיין נתונים</td></tr>';
+  // 12 progress over time (always last 14 days)
+  const pd=[],t0=new Date();t0.setHours(0,0,0,0);
+  for(let i=13;i>=0;i--){const a=new Date(t0);a.setDate(a.getDate()-i);const b=new Date(a);b.setDate(b.getDate()+1);
+    const dr=rows.filter(r=>r.t>=a.getTime()&&r.t<b.getTime());pd.push({l:a.getDate()+'/'+(a.getMonth()+1),v:dr.length?Math.round(dr.reduce((x,r)=>x+r.fl,0)/dr.length):0});}
+  cols($('cProg'),pd);
 }
 document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
   days=Number(b.getAttribute('data-d'));document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));draw();}));
-$('reload').addEventListener('click',load);
+$('reload').addEventListener('click',()=>{if(demo)makeDemo();else load();});
+let demo=false;
+function makeDemo(){
+  demo=true;$('gate').classList.add('hidden');$('app').classList.remove('hidden');$('demoTag').classList.remove('hidden');$('whoTxt').textContent='מצב דוגמה';
+  const names=['Jacob','Hilay','Tas','Liliy','Noa','Omer','Dana','Yoni','Maya','Itay','Shira','Ron'];const devs=['ios','ios','ios','android','android','pc'];
+  const wk=['double','power','shield','buddy','hijump'];rows=[];const now=Date.now();
+  for(let i=0;i<420;i++){const ni=Math.floor(Math.pow(Math.random(),1.6)*names.length);const fl=Math.floor(-Math.log(1-Math.random())*120);const sp=Math.floor(Math.random()*6);
+    rows.push({n:names[ni],c:ORDER[Math.floor(Math.random()*6)],s:fl*40+Math.floor(Math.random()*900),fl,cb:Math.floor(-Math.log(1-Math.random())*9),sp,ok:Math.floor(sp*Math.random()),
+      w:Math.random()<.35?wk[Math.floor(Math.random()*5)]:'',du:Math.max(8,Math.round(fl*0.55+Math.random()*40)),dv:devs[ni%devs.length],id:'d'+ni,t:now-Math.floor(Math.pow(Math.random(),1.3)*14*86400000)});}
+  draw();
+}
+
+$('signout').addEventListener('click',()=>{demo=false;});
 </script>
 </body>
 </html>
