@@ -92,6 +92,19 @@ input[type=range]{flex:1;max-width:calc(var(--u)*170);height:calc(var(--u)*30);b
 .spbtn.ready .ic svg{stroke:var(--c)}
 .spbtn.ready{animation:sppulse 1.2s ease-in-out infinite}
 .spbtn.down{transform:scale(.92)}
+#bT{bottom:calc(var(--u)*158);--c:#b57bff}
+#bT .ic{opacity:1}#bT .ic svg{stroke:#e0c8ff}
+#tele{position:absolute;inset:0;z-index:20;background:rgba(8,4,26,.22)}
+#tele.hidden{display:none}
+.gate{position:absolute;width:calc(var(--u)*58);height:calc(var(--u)*58);margin:calc(var(--u)*-29) 0 0 calc(var(--u)*-29);border-radius:50%;padding:0;cursor:pointer;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(30,14,66,.78);border:calc(var(--u)*2) solid rgba(255,213,61,.8);box-shadow:0 0 calc(var(--u)*10) rgba(181,123,255,.55);animation:gin .2s var(--d) both ease-out;font-family:'Bangers',Impact,sans-serif}
+.gate b{font-weight:400;font-size:calc(var(--u)*24);line-height:1;color:#fff2a8}
+.gate small{font-size:calc(var(--u)*9);letter-spacing:calc(var(--u)*.5);color:#cdb8f0}
+.gate:active{transform:scale(.9)}
+.gate.art{background:none;border:none;box-shadow:none}
+.gate .gimg{position:absolute;background-repeat:no-repeat;opacity:.68;pointer-events:none}
+.gate.art b,.gate.art small{position:relative;text-shadow:0 0 calc(var(--u)*4) #000,0 0 calc(var(--u)*8) rgba(20,8,50,.9)}
+.gateX{position:absolute;top:calc(var(--u)*14);right:calc(var(--u)*14);width:calc(var(--u)*36);height:calc(var(--u)*36);border-radius:50%;border:calc(var(--u)*1.5) solid rgba(224,200,255,.5);background:rgba(20,14,48,.6);color:#fff;font-size:calc(var(--u)*16);cursor:pointer}
+@keyframes gin{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
 @keyframes sppulse{0%,100%{box-shadow:0 0 0 calc(var(--u)*2) var(--ink),0 0 calc(var(--u)*6) var(--c)}50%{box-shadow:0 0 0 calc(var(--u)*2) var(--ink),0 0 calc(var(--u)*22) var(--c)}}
 .big #pad{height:156px}
 .big #pad button{height:128px;font-size:36px}
@@ -127,6 +140,7 @@ input[type=range]{flex:1;max-width:calc(var(--u)*170);height:calc(var(--u)*30);b
     <button id="skipBtn" class="skipbtn hidden" aria-label="Skip">Skip <svg viewBox="0 0 24 24"><path d="M5 5l7 7-7 7M13 5l7 7-7 7"/></svg></button>
     <button id="pauseBtn" class="topbtn hidden" aria-label="Pause game"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button>
     <button id="bS" class="spbtn hidden" aria-label="Special ability"><span class="ic"></span><span class="lb">Special</span></button>
+    <button id="bT" class="spbtn hidden" aria-label="Teleport"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/></svg></span><span class="lb">Teleport</span></button>
     <button id="gearBtn" class="topbtn" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
     <section id="menu" class="screen">
       <h1>Ki Tower</h1>
@@ -187,6 +201,7 @@ input[type=range]{flex:1;max-width:calc(var(--u)*170);height:calc(var(--u)*30);b
         <div class="set"><span>Screen shake</span><button id="sShake" class="sw" role="switch" aria-checked="true" aria-label="Screen shake"></button></div>
         <div class="set"><span>Light effects<small>Smoother on older phones</small></span><button id="sLite" class="sw" role="switch" aria-checked="false" aria-label="Light effects"></button></div>
         <div class="set"><span>Big buttons<small>Touch controls</small></span><button id="sBig" class="sw" role="switch" aria-checked="false" aria-label="Big buttons"></button></div>
+        <div class="set"><span>Secret code<small id="sCodeMsg"></small></span><input id="sCode" maxlength="20" autocomplete="off" spellcheck="false" aria-label="Secret code" style="width:calc(var(--u)*110)"><button id="sCodeOk" class="btn alt" style="height:calc(var(--u)*36);font-size:calc(var(--u)*18);padding:0 calc(var(--u)*10)">OK</button></div>
         <button id="sBack" class="btn">Back</button>
       </div>
     </section>
@@ -196,6 +211,12 @@ input[type=range]{flex:1;max-width:calc(var(--u)*170);height:calc(var(--u)*30);b
         <ol id="boardAll" class="board" style="max-height:calc(var(--u)*430);overflow-y:auto;touch-action:pan-y;-webkit-overflow-scrolling:touch"></ol>
         <button id="allBack" class="btn">Back</button>
       </div>
+    </section>
+    <section id="tele" class="hidden" aria-label="Teleport">
+      <button id="t30" class="gate" style="--d:0s"><b>30</b><small>floors</small></button>
+      <button id="t50" class="gate" style="--d:.08s"><b>50</b><small>floors</small></button>
+      <button id="t100" class="gate" style="--d:.16s"><b>100</b><small>floors</small></button>
+      <button id="tNo" class="gateX" aria-label="Cancel">&#x2715;</button>
     </section>
     <section id="wish" class="screen hidden" style="justify-content:flex-end;padding-bottom:calc(var(--u)*18)">
       <div class="panel">

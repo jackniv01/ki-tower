@@ -21,7 +21,10 @@ var CH=[
   hair:['#e8e8ff','#ffb347','#ff5d8f','#7cf3ff'],hairS:['#a9aed8','#d9801f','#c23a68','#3cb5c8'],aura:['#ffffff','#ffb347','#ff5d8f','#7cf3ff'],iris:['#7a5cff','#d9801f','#c23a68','#0a9fb8'],tail:['#f09a45','#ffb347','#ff5d8f','#7cf3ff'],tailS:['#b8631f','#d9801f','#c23a68','#3cb5c8']},
  {name:'Daniella',type:'cat',skin:'#f6cfa3',skinS:'#d9a06f',top:'#4a2a7a',topS:'#2e1a52',pants:'#1a1424',pantsS:'#0c0a14',boot:'#5a2a8f',bootS:'#3b1a66',sash:'#a8e63d',sashS:'#6aa01a',trim:'#a8e63d',
   armU:'skin',armL:'skin',band:'#1a1424',bandS:'#0c0a14',
-  hair:['#1a1424','#e8e8ff','#ffb347','#ff5d8f'],hairS:['#0c0a14','#a9aed8','#d9801f','#c23a68'],aura:['#a8e63d','#e8e8ff','#ffb347','#ff5d8f'],iris:['#3fae4a','#3fae4a','#3fae4a','#3fae4a']}
+  hair:['#1a1424','#e8e8ff','#ffb347','#ff5d8f'],hairS:['#0c0a14','#a9aed8','#d9801f','#c23a68'],aura:['#a8e63d','#e8e8ff','#ffb347','#ff5d8f'],iris:['#3fae4a','#3fae4a','#3fae4a','#3fae4a']},
+ {name:'Sonofgod',type:'god',secret:true,skin:'#f9dcc0',skinS:'#dcae86',top:'#f6f2ff',topS:'#c9c2e8',pants:'#3a1f6e',pantsS:'#22104a',boot:'#3a1f6e',bootS:'#22104a',sash:'#ffd53d',sashS:'#c8981a',trim:'#ffd53d',
+  armU:'skin',armL:'skin',band:'#ffd53d',bandS:'#c8981a',
+  hair:['#f4f4ff','#fff2a8','#e0c8ff','#ffffff'],hairS:['#b9bde0','#d9c36a','#a77ee0','#d8d8f0'],aura:['#ffe9a8','#ffd53d','#b57bff','#ffffff'],iris:['#ffd53d','#ffd53d','#ffd53d','#ffd53d']}
 ];
 
 var ABIL={
@@ -35,6 +38,8 @@ var ABIL={
    icon:'<svg viewBox="0 0 24 24"><path d="M12 21v-5"/><path d="M12 16c0-5 0-9 0-13 1.6 3.5 1.6 8.5 0 13z"/><path d="M12 16c-1.6-4-4.4-7-7.5-8.5 0.8 3.8 3.8 7 7.5 8.5z"/><path d="M12 16c1.6-4 4.4-7 7.5-8.5-0.8 3.8-3.8 7-7.5 8.5z"/><path d="M12 16c-2.6-1.4-5.6-1.8-8.5-1 2.2 1.6 5.4 1.8 8.5 1z"/><path d="M12 16c2.6-1.4 5.6-1.8 8.5-1-2.2 1.6-5.4 1.8-8.5 1z"/></svg>'},
  cat:{name:'Cat Jumps',desc:'Jump 3 extra times in mid-air, leaving glowing paw prints.',cd:600,col:'#a8e63d',
    icon:'<svg viewBox="0 0 24 24"><ellipse cx="12" cy="16" rx="4.6" ry="3.8"/><circle cx="6" cy="10.5" r="2"/><circle cx="9.6" cy="6.5" r="2"/><circle cx="14.4" cy="6.5" r="2"/><circle cx="18" cy="10.5" r="2"/></svg>'},
+ god:{name:'Divine Flight',desc:'Hold to fly up, faster and faster. The screen never climbs by itself. Teleport button: jump 30, 50 or 100 floors.',cd:1,col:'#ffd53d',hold:true,
+   icon:'<svg viewBox="0 0 24 24"><ellipse cx="12" cy="4.5" rx="5" ry="1.8"/><path d="M12 21V9M7 13l5-5 5 5"/></svg>'},
  beast:{name:'Fashion Wings',desc:'Sparkly wings: glide down slowly and jump again in the air.',cd:720,col:'#ff9ad5',
    icon:'<svg viewBox="0 0 24 24"><path d="M12 12C9 5 4 4 2.5 6.5 2 10 6 13 12 12zM12 12c3-7 8-8 9.5-5.5.5 3.5-3.5 6.5-9.5 5.5zM12 12c-3 3-6 6-4.5 8 2 1 4-3 4.5-8zM12 12c3 3 6 6 4.5 8-2 1-4-3-4.5-8z"/></svg>'}
 };
@@ -195,8 +200,9 @@ applyMute();
 var memScores=[];
 function loadScores(){try{var a=JSON.parse(localStorage.getItem('kitower_scores')||'[]');return Array.isArray(a)?a:memScores;}catch(e){return memScores;}}
 function saveScores(a){memScores=a;try{localStorage.setItem('kitower_scores',JSON.stringify(a));}catch(e){}}
-var playerName='',chIdx=0;
+var playerName='',chIdx=0,godOK=false;try{godOK=localStorage.getItem('kitower_god')==='1';}catch(e){}
 try{playerName=localStorage.getItem('kitower_name')||'';chIdx=clamp(parseInt(localStorage.getItem('kitower_char')||'0',10)||0,0,CH.length-1);}catch(e){}
+if(CH[chIdx].secret&&!godOK)chIdx=0;
 nameEl.value=playerName;
 /* ---------- shared scoreboard (Firebase Firestore, REST, no accounts) ---------- */
 var FB_KEY='AIzaSyAsYyEcogB2vyxx2zId6rvE0oNgjlNujTk',FB_DOCS='projects/ki-tower/databases/(default)/documents';
@@ -368,7 +374,7 @@ function scrollSpeed(){var f=floorsBest;return f<=200?0.7+f*0.0095:2.6+Math.min(
 function die(){
   endCombo();state='over';sfx.down();overReady=false;vib([80,60,120]);syncTop();
   var entry=null,rank=-1;
-  if(score>0){
+  if(score>0&&!isGod()){
     entry={id:Date.now(),name:playerName,score:score,floor:floorsBest,combo:bestCombo};
     var list=loadScores();list.push(entry);list.sort(function(a,b){return b.score-a.score;});list=list.slice(0,50);saveScores(list);
     for(var i=0;i<list.length;i++){if(list[i].id===entry.id){rank=i;break;}}
@@ -421,7 +427,7 @@ function step(){
   t++;
   if(state==='over'){updateParts();return;}
   if(state==='wish'){stepWish();return;}
-  if(state==='paused')return;
+  if(state==='paused'||state==='tpick')return;
   playF++;
   if(fly){stepFly();return;}
   if(tinyT>0)tinyT--;if(giantT>0)giantT--;
@@ -453,10 +459,11 @@ function step(){
   if(P.x+HW>W-WALL){P.x=W-WALL-HW;if(P.vx>0){P.vx=-P.vx*0.9;sfx.bounce();for(var b=0;b<4;b++)spawn('spark',W-WALL,P.y-rnd(10,50),-rnd(0.5,2),rnd(-1.5,0.5),14,2.5,'#ffffff');}}
   var py=P.y,wasOn=P.on;
   if(cloudT>0){cloudT--;P.vy+=(-2.6-P.vy)*0.12;P.flip=false;if(t%3===0)spawn('dust',P.x+rnd(-20,20),P.y+6,rnd(-0.7,0.7),rnd(0.3,1),rnd(26,40),rnd(5,9),t%2?'#b8e8b0':'#8fcf8f',-0.01);if(t%10===0)spawn('leaf',P.x+rnd(-18,18),P.y+4,rnd(-0.5,0.5),rnd(0.4,1),40,0.7,'#3fae4a');}
+  else if(godFlyStep()){}
   else if(monkeyT>0){P.vy=Math.min(MAXFALL,P.vy+GRAV*0.3);}
   else if(!cling)P.vy=Math.min(MAXFALL,P.vy+GRAV);
   if(wingT>0&&P.vy>2.2)P.vy=2.2;
-  P.y+=P.vy;P.on=false;
+  P.y+=P.vy;P.on=false;if(godSpd>0)flyFloors();
   if(P.vy>0){
     var fi=Math.round(-P.y/SP);
     for(var f=fi+1;f>=fi-1;f--){
@@ -485,7 +492,7 @@ function step(){
   auraSparks(tier);
   if(combo>0){comboT--;if(comboT<=0)endCombo();}
   if(floorsBest>=3)started=true;
-  if(started)cam-=scrollSpeed();
+  if(started&&!isGod())cam-=scrollSpeed();
   var target=P.y-H*0.42;if(target<cam)cam+=(target-cam)*0.2;
   fs+=(floorsBest-fs)*0.03;
   while((plats.length-1)*SP<-cam+320)addPlat();
