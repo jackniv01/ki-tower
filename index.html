@@ -318,28 +318,36 @@ function saveScores(a){memScores=a;try{localStorage.setItem('kitower_scores',JSO
 var playerName='',chIdx=0;
 try{playerName=localStorage.getItem('kitower_name')||'';chIdx=clamp(parseInt(localStorage.getItem('kitower_char')||'0',10)||0,0,CH.length-1);}catch(e){}
 nameEl.value=playerName;
-/* ---------- shared scoreboard (works once the page has a shared database) ---------- */
-var SDB=null,SUID=null,sharedList=null,sharedMine=[];
+/* ---------- shared scoreboard (Firebase Firestore, REST, no accounts) ---------- */
+var FB_KEY='AIzaSyAsYyEcogB2vyxx2zId6rvE0oNgjlNujTk',FB_DOCS='projects/ki-tower/databases/(default)/documents';
+var FB_URL='https://firestore.googleapis.com/v1/'+FB_DOCS;
+var sharedList=null,sharedBusy=false;
 function sanitizeEntry(e){if(!e||typeof e!=='object')return null;var s=Number(e.score),f=Number(e.floor);if(!isFinite(s)||!isFinite(f)||s<0||s>1e9)return null;return {id:Number(e.id)||0,name:String(e.name||'?').slice(0,14),score:Math.round(s),floor:Math.round(f),combo:Number(e.combo)||0};}
-function initShared(){
-  if(!window.claude||typeof window.claude.use!=='function')return;
-  Promise.all([window.claude.use('db'),window.claude.use('user')]).then(function(r){
-    var db=r[0],us=r[1];if(!db||!us)return;
-    return us.id().then(function(id){
-      if(!id)return;SDB=db;SUID=id;
-      db.collection('scores').onSnapshot(function(snap){
-        var all=[];
-        snap.docs.forEach(function(d){var b=d.data();if(!b||!Array.isArray(b.list))return;b.list.forEach(function(e){var x=sanitizeEntry(e);if(x)all.push(x);});if(d.id===SUID)sharedMine=b.list.map(sanitizeEntry).filter(Boolean);});
-        all.sort(function(a,b){return b.score-a.score;});
-        sharedList=all.slice(0,50);refreshBoards();
-      },function(){});
-    });
-  }).catch(function(){});
+function fbInt(v){return v&&v.integerValue!=null?Number(v.integerValue):(v&&v.doubleValue!=null?Number(v.doubleValue):0);}
+function fetchShared(){
+  if(sharedBusy||typeof fetch!=='function')return;sharedBusy=true;
+  fetch(FB_URL+':runQuery?key='+FB_KEY,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({structuredQuery:{from:[{collectionId:'scores'}],orderBy:[{field:{fieldPath:'score'},direction:'DESCENDING'}],limit:50}})})
+  .then(function(r){if(!r.ok)throw 0;return r.json();})
+  .then(function(rows){
+    var all=[];
+    (rows||[]).forEach(function(r){var d=r&&r.document;if(!d||!d.fields)return;var f=d.fields;
+      var m=/\/s(\d+)_[^\/]*$/.exec(d.name||'');
+      var x=sanitizeEntry({id:m?Number(m[1]):0,name:f.name&&f.name.stringValue,score:fbInt(f.score),floor:fbInt(f.floor),combo:fbInt(f.combo)});if(x)all.push(x);});
+    all.sort(function(a,b){return b.score-a.score;});
+    sharedList=all.slice(0,50);refreshBoards();
+  }).catch(function(){}).then(function(){sharedBusy=false;});
 }
+function initShared(){fetchShared();setInterval(function(){if(state!=='play')fetchShared();},45000);}
 function pushShared(entry){
-  if(!SDB||!SUID||!entry)return;
-  var mine=sharedMine.slice();mine.push(entry);mine.sort(function(a,b){return b.score-a.score;});mine=mine.slice(0,20);sharedMine=mine;
-  try{SDB.doc('scores/'+SUID).set({name:entry.name,list:mine}).catch(function(){SDB=null;});}catch(e){}
+  if(!entry||typeof fetch!=='function')return;
+  var nm=String(entry.name||'?').trim().slice(0,14)||'?';
+  var id='s'+(entry.id||Date.now())+'_'+Math.random().toString(36).slice(2,8);
+  var body={writes:[{update:{name:FB_DOCS+'/scores/'+id,fields:{name:{stringValue:nm},score:{integerValue:String(Math.max(0,Math.min(1e8,Math.round(entry.score||0))))},floor:{integerValue:String(Math.max(0,Math.min(1e5,Math.round(entry.floor||0))))},combo:{integerValue:String(Math.round(entry.combo||0))}}},
+    updateTransforms:[{fieldPath:'ts',setToServerValue:'REQUEST_TIME'}],currentDocument:{exists:false}}]};
+  if(sharedList){var x=sanitizeEntry(entry);if(x){sharedList.push(x);sharedList.sort(function(a,b){return b.score-a.score;});sharedList=sharedList.slice(0,50);refreshBoards();}}
+  fetch(FB_URL+':commit?key='+FB_KEY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+  .then(function(){setTimeout(fetchShared,800);}).catch(function(){});
 }
 function refreshBoards(){
   try{
