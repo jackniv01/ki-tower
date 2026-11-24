@@ -209,7 +209,7 @@ function draw(){
   for(let i=nd-1;i>=0;i--){const s=new Date(today);s.setDate(s.getDate()-i);const e=new Date(s);e.setDate(e.getDate()+1);
     dd.push({l:s.getDate()+'/'+(s.getMonth()+1),v:rows.filter(r=>r.t>=s.getTime()&&r.t<e.getTime()).length});}
   cols($('cDays'),dd);
-  const hh=Array.from({length:24},(_,h)=>({l:h%3===0?String(h):'',v:0}));
+  const hh=Array.from({length:24},(_,h)=>({l:h%3===0?String(h):'\u00a0',v:0}));
   R.forEach(r=>{if(r.t)hh[new Date(r.t).getHours()].v++;});cols($('cHours'),hh);
   const pl={};R.forEach(r=>{const k=r.n.trim().toLowerCase();const o=pl[k]=pl[k]||{n:r.n.trim(),g:0,b:0,f:0};o.g++;if(r.s>o.b)o.b=r.s;if(r.fl>o.f)o.f=r.fl;});
   const pls=Object.values(pl).sort((a,b)=>b.g-a.g||b.b-a.b).slice(0,10);
