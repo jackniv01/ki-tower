@@ -2397,7 +2397,7 @@ function drawFlyBack(){
 }
 function drawFlyFront(){
   if(!fly||state!=='play'||fly.k!=='ride'||fly.h.length<6)return;
-  if(DRG.aok){dHead(2,P.x+P.dir*34,P.y-cam+2,82,P.dir<0);}else{var hd=fly.h[0];ctx.save();ctx.translate(P.x+P.dir*30,P.y-cam+4);ctx.scale(0.5*(P.dir<0?-1:1),0.5);dragonHead(0,0,0.9);ctx.restore();}
+  if(DRG.aok){dHead(2,P.x+P.dir*30,P.y-cam+8,92,P.dir<0);}else{var hd=fly.h[0];ctx.save();ctx.translate(P.x+P.dir*30,P.y-cam+4);ctx.scale(0.5*(P.dir<0?-1:1),0.5);dragonHead(0,0,0.9);ctx.restore();}
   var left=Math.ceil((fly.dur-fly.t)/60);if(left>0){ctx.save();ctx.font='900 18px Nunito, system-ui, sans-serif';ctx.textAlign='center';outlineText(left+'s',P.x,P.y-cam-96,18,'#ffd53d','center');ctx.restore();}
 }
 /* surprise */
@@ -2465,9 +2465,9 @@ function drawBuddyArt(){
 }
 function drawRideArt(){
   var h=fly.h,n=h.length;if(n<4)return;
-  var pts=[];for(var i=0;i<n;i++)pts.push({x:h[i].x,y:h[i].y-cam});
+  var pts=[],m=Math.min(n,24);for(var i=0;i<m;i++){var k=Math.min(1,i/5);pts.push({x:P.x+Math.sin(t*0.13-i*0.45)*26*k,y:P.y-cam+22+i*13});}n=m;
   ctx.save();ctx.globalCompositeOperation='lighter';glowDot(P.x,P.y-cam+20,90,'#ffcf3a',0.3);ctx.restore();
-  dBody(pts,function(k){return 17*(1-0.45*k/n);},1.3);
+  dBody(pts,function(k){return 22*(1-0.4*k/n);},1.4);
 }
 
 window.__kt={get:function(){return {state:state,f:floorsBest,fs:fs};},set:function(f){floorsBest=f;fs=f;lastFloor=f;while(plats.length<=f+16)addPlat();var pl=plats[f];P.x=pl.x+pl.w/2;P.y=pl.y;P.vx=0;P.vy=0;P.on=true;cam=P.y-H*0.58;},P:function(){return P;},jump:function(){jumpBuf=9;},keys:keys,wish:function(){orbsSaved=[1,2,3,4,5,6];orbsWorld.push({num:7,x:P.x,y:P.y-34,got:false,ph:0});},tier:function(n){tier=n;},tiers:function(cn){var m=ctx;ctx=cn.getContext('2d');ctx.fillStyle='#8fc3ff';ctx.fillRect(0,0,cn.width,cn.height);for(var ci=0;ci<2;ci++)for(var k=0;k<4;k++){var o=newHero();ctx.setTransform(3,0,0,3,0,0);drawHero(50+k*120,115+ci*125,o,k,ci);}ctx=m;},show:function(cn){var m=ctx;ctx=cn.getContext('2d');var g=ctx.createLinearGradient(0,0,0,cn.height);g.addColorStop(0,'#3d8ff0');g.addColorStop(1,'#e4f6ff');ctx.fillStyle=g;ctx.fillRect(0,0,cn.width,cn.height);var ps=[{},{vx:5,ph:1},{on:false,vy:-8},{on:false,vy:12},{trans:30},{win:30}];for(var k=0;k<ps.length;k++){var o=newHero();for(var q in ps[k])o[q]=ps[k][q];ctx.setTransform(4,0,0,4,0,0);drawHero(36+(k%3)*95,118+Math.floor(k/3)*118,o,k===4?3:0,0);}ctx=m;},sheet:function(cn){var m=ctx;ctx=cn.getContext('2d');ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#8fc3ff';ctx.fillRect(0,0,cn.width,cn.height);var ps=[{},{vx:5,ph:1},{vx:5,ph:2.6},{on:false,vy:-8},{on:false,vy:12},{trans:30},{win:30},{sq:0.8}];for(var ci=0;ci<CH.length;ci++)for(var k=0;k<ps.length;k++){var o=newHero();for(var q in ps[k])o[q]=ps[k][q];ctx.setTransform(3,0,0,3,0,0);drawHero(40+k*70,120+ci*120,o,k===5?2:0,ci);}ctx=m;}};
