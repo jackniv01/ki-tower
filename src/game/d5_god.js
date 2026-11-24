@@ -23,10 +23,10 @@ function openTele(){
   if(state!=='play'||fly||!isGod())return;
   godHold=false;state='tpick';keys.l=false;keys.r=false;jumpBuf=0;
   /* place 3 gates around the hero: left, above, right */
-  var hx=clamp(P.x,130,W-130),hy=clamp(P.y-cam-60,170,H-200),pos=[[hx-112,hy+10],[hx,hy-110],[hx+112,hy+10]],ids=['t30','t50','t100'];
+  var hx=clamp(P.x,130,W-130),hy=clamp(P.y-cam-60,170,H-200),pos=[[hx-78,hy+6],[hx,hy-72],[hx+78,hy+6]],ids=['t30','t50','t100'];
   for(var i=0;i<3;i++){var b=document.getElementById(ids[i]);b.style.left='calc(var(--u)*'+pos[i][0]+')';b.style.top='calc(var(--u)*'+pos[i][1]+')';}
   teleEl.style.setProperty('--hx',(P.x/W*100)+'%');teleEl.style.setProperty('--hy',((P.y-cam-45)/H*100)+'%');
-  teleEl.classList.remove('hidden');syncTop();sfx.power();
+  teleEl.classList.remove('hidden');syncTop();tone(880,0.12,'sine',0.03,1320);
 }
 function closeTele(n){
   if(state!=='tpick')return;
