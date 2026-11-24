@@ -69,6 +69,9 @@ input.bad{border-color:#ff5d73;box-shadow:0 0 calc(var(--u)*10) rgba(255,93,115,
 #over .panel{animation:pop .35s cubic-bezier(.2,1.4,.4,1) both}
 .topbtn{position:absolute;top:calc(var(--u)*8);left:50%;transform:translateX(-50%);width:calc(var(--u)*44);height:calc(var(--u)*44);border-radius:50%;border:calc(var(--u)*2) solid rgba(255,213,61,.7);background:linear-gradient(180deg,rgba(60,44,130,.85),rgba(20,16,43,.85));color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;z-index:5;box-shadow:0 0 calc(var(--u)*10) rgba(255,213,61,.35)}
 .topbtn svg{width:58%;height:58%;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.skipbtn{position:absolute;top:calc(var(--u)*12);right:calc(var(--u)*14);z-index:25;display:flex;align-items:center;gap:calc(var(--u)*4);height:calc(var(--u)*38);padding:0 calc(var(--u)*14);border-radius:calc(var(--u)*19);border:calc(var(--u)*2) solid rgba(255,213,61,.75);background:rgba(20,14,48,.78);color:#ffd53d;font:900 calc(var(--u)*17)/1 'Bangers','Nunito',system-ui,sans-serif;letter-spacing:.04em;cursor:pointer;box-shadow:0 0 calc(var(--u)*10) rgba(255,213,61,.35)}
+.skipbtn svg{width:calc(var(--u)*16);height:calc(var(--u)*16);fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+.skipbtn.hidden{display:none}
 .topbtn:focus-visible{outline:calc(var(--u)*3) solid var(--gold)}
 h1.mid{font-size:calc(var(--u)*62)}
 .vlist{display:flex;flex-direction:column;gap:calc(var(--u)*10)}
@@ -121,12 +124,13 @@ input[type=range]{flex:1;max-width:calc(var(--u)*170);height:calc(var(--u)*30);b
 <div id="app">
   <div id="stage">
     <canvas id="c" aria-label="Ki Tower game"></canvas>
+    <button id="skipBtn" class="skipbtn hidden" aria-label="Skip">Skip <svg viewBox="0 0 24 24"><path d="M5 5l7 7-7 7M13 5l7 7-7 7"/></svg></button>
     <button id="pauseBtn" class="topbtn hidden" aria-label="Pause game"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button>
     <button id="bS" class="spbtn hidden" aria-label="Special ability"><span class="ic"></span><span class="lb">Special</span></button>
     <button id="gearBtn" class="topbtn" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
     <section id="menu" class="screen">
       <h1>Ki Tower</h1>
-      <p class="sub" style="color:#7dff9a">🔴 ORB TEST – scores are not saved</p>
+      <p class="sub" style="color:#7dff9a">🔴 ORB + SKIP TEST – scores are not saved</p>
       <div class="panel">
         <div id="chars" class="chars" role="group" aria-label="Choose your fighter"></div>
         <input id="name" maxlength="12" placeholder="Your name" autocomplete="off" spellcheck="false" aria-label="Your name">
@@ -2056,6 +2060,17 @@ function wishAdvance(){
     }else{wishPhase=5;wt=0;}
   }
 }
+var skipBtn=document.getElementById('skipBtn');
+function wishSkip(){
+  if(state!=='wish')return;
+  if(wishPhase<=2){wishPhase=3;wt=0;wLine=0;wTyped=0;wishEl.classList.remove('hidden');var b=wishEl.querySelector('button');if(b)b.focus();}
+  else if(wishPhase===4){wishPhase=5;wt=0;}
+  else if(wishPhase===5){if(wt<1)applyWish(wChosen);state='play';jumpBuf=0;}
+}
+skipBtn.addEventListener('click',function(e){e.stopPropagation();wishSkip();});
+skipBtn.addEventListener('pointerdown',function(e){e.stopPropagation();});
+function syncSkip(){var on=state==='wish'&&wishPhase!==3;skipBtn.classList.toggle('hidden',!on);}
+setInterval(syncSkip,100);
 function chooseWish(i){
   if(state!=='wish'||wishPhase!==3)return;
   if(!offered[i])return;wChosen=offered[i];if(gWish.length<6&&wChosen.id!=='surprise')gWish.push(wChosen.id);wishEl.classList.add('hidden');wishPhase=4;wt=0;wLines=[wChosen.reply];wLine=0;wTyped=0;sfx.combo(12);
