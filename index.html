@@ -414,7 +414,7 @@ nameEl.value=playerName;
 /* ---------- shared scoreboard (Firebase Firestore, REST, no accounts) ---------- */
 var FB_KEY='AIzaSyAsYyEcogB2vyxx2zId6rvE0oNgjlNujTk',FB_DOCS='projects/ki-tower/databases/(default)/documents';
 var FB_URL='https://firestore.googleapis.com/v1/'+FB_DOCS;
-var sharedList=null,sharedBusy=false;
+var sharedList=null,sharedBusy=false,spN=0,gWish=[];
 function sanitizeEntry(e){if(!e||typeof e!=='object')return null;var s=Number(e.score),f=Number(e.floor);if(!isFinite(s)||!isFinite(f)||s<0||s>1e9)return null;return {id:Number(e.id)||0,name:String(e.name||'?').slice(0,14),score:Math.round(s),floor:Math.round(f),combo:Number(e.combo)||0};}
 function fbInt(v){return v&&v.integerValue!=null?Number(v.integerValue):(v&&v.doubleValue!=null?Number(v.doubleValue):0);}
 function fetchShared(){
@@ -436,7 +436,7 @@ function pushShared(entry){
   if(!entry||typeof fetch!=='function')return;
   var nm=String(entry.name||'?').trim().slice(0,14)||'?';
   var id='s'+(entry.id||Date.now())+'_'+Math.random().toString(36).slice(2,8);
-  var body={writes:[{update:{name:FB_DOCS+'/scores/'+id,fields:{name:{stringValue:nm},score:{integerValue:String(Math.max(0,Math.min(1e8,Math.round(entry.score||0))))},floor:{integerValue:String(Math.max(0,Math.min(1e5,Math.round(entry.floor||0))))},combo:{integerValue:String(Math.round(entry.combo||0))},char:{stringValue:String((CH[chIdx]&&CH[chIdx].name)||'?').slice(0,12)}}},
+  var body={writes:[{update:{name:FB_DOCS+'/scores/'+id,fields:{name:{stringValue:nm},score:{integerValue:String(Math.max(0,Math.min(1e8,Math.round(entry.score||0))))},floor:{integerValue:String(Math.max(0,Math.min(1e5,Math.round(entry.floor||0))))},combo:{integerValue:String(Math.round(entry.combo||0))},char:{stringValue:String((CH[chIdx]&&CH[chIdx].name)||'?').slice(0,12)},sp:{integerValue:String(Math.min(9999,spN))},wish:{stringValue:gWish.join(',').slice(0,60)}}},
     updateTransforms:[{fieldPath:'ts',setToServerValue:'REQUEST_TIME'}],currentDocument:{exists:false}}]};
   if(sharedList){var x=sanitizeEntry(entry);if(x){sharedList.push(x);sharedList.sort(function(a,b){return b.score-a.score;});sharedList=sharedList.slice(0,50);refreshBoards();}}
   fetch(FB_URL+':commit?key='+FB_KEY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
@@ -493,7 +493,7 @@ function reset(){
   P=newHero();
   cam=-(H-110);parts=[];pops=[];trail=[];shk=0;
   floorsBest=0;lastFloor=0;score=0;combo=0;comboT=0;bestCombo=0;tier=0;started=false;fs=0;jumpBuf=0;
-  orbsWorld=[];lastOrbFloor=0;wishPower=false;wishShield=false;hiJump=1;dblUntil=0;magnet=false;buddy=null;celebT=0;abCD=0;specBuf=0;monkeyT=0;monkeyDir=1;vineT=0;cloudT=0;dashT=0;cling=0;monkeyN=0;wingT=0;wingJ=false;clingK='';catN=0;
+  orbsWorld=[];lastOrbFloor=0;wishPower=false;wishShield=false;hiJump=1;dblUntil=0;magnet=false;buddy=null;celebT=0;abCD=0;specBuf=0;monkeyT=0;monkeyDir=1;vineT=0;cloudT=0;dashT=0;cling=0;monkeyN=0;wingT=0;wingJ=false;clingK='';catN=0;spN=0;gWish=[];
 }
 function enterMenu(){
   reset();cam=-640;state='menu';
@@ -1904,7 +1904,7 @@ function useSpecial(){
   var c=CH[chIdx],A=ABIL[c.type];
   if(A.auto){pushPop(abCD>0?'Revive is charging':'Revive is ready',P.x,P.y-110,A.col,22);return;}
   if(abCD>0||(c.type==='warrior'&&monkeyN>0)||(c.type==='cat'&&catN>0)){tone(180,0.08,'square',0.03);return;}
-  abCD=A.cd;spawn('ring',P.x,P.y-40,0,0,24,5,A.col);tone(440,0.18,'triangle',0.05,880);vib(25);
+  abCD=A.cd;spN++;spawn('ring',P.x,P.y-40,0,0,24,5,A.col);tone(440,0.18,'triangle',0.05,880);vib(25);
   if(c.type==='warrior'){if(monkeyN>0){abCD=0;return;}monkeyN=4;abCD=0;}
   else if(c.type==='alien'){vineT=300;}
   else if(c.type==='robot'){cloudT=210;P.on=false;P.flip=false;P.vy=Math.min(P.vy,-3);}
@@ -1927,7 +1927,7 @@ function monkeyKick(wl){
   spawn('ring',P.x+wl*HW,P.y-40,0,0,20,4,'#ffe066');
 }
 function reviveSave(){
-  rescue();abCD=ABIL.fighter.cd;
+  rescue();abCD=ABIL.fighter.cd;spN++;
   pushPop('Revived!',P.x,P.y-140,'#ff6b8a',30);
   for(var i=0;i<16;i++){var a=Math.random()*Math.PI*2;spawn('spark',P.x,P.y-40,Math.cos(a)*rnd(1,3),Math.sin(a)*rnd(1,3)-1,rnd(24,40),3,'#ff6b8a');}
 }
@@ -2041,7 +2041,7 @@ function wishAdvance(){
 }
 function chooseWish(i){
   if(state!=='wish'||wishPhase!==3)return;
-  wChosen=WISHES[i];wishEl.classList.add('hidden');wishPhase=4;wt=0;wLines=[wChosen.reply];wLine=0;wTyped=0;sfx.combo(12);
+  wChosen=WISHES[i];if(gWish.length<6)gWish.push(wChosen.id);wishEl.classList.add('hidden');wishPhase=4;wt=0;wLines=[wChosen.reply];wLine=0;wTyped=0;sfx.combo(12);
   if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();
 }
 function wishKey(e){

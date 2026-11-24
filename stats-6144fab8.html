@@ -89,11 +89,20 @@
     <h2>עד איזו קומה מגיעים</h2>
     <div class="card" id="cFloors"></div>
 
+    <h2>באיזה עולם נופלים</h2>
+    <div class="card" id="cWorlds"></div>
+
+    <h2>שימוש ביכולת המיוחדת</h2>
+    <div class="card"><table><thead><tr><th>דמות</th><th class="num">ממוצע למשחק</th><th class="num">משחקים בלי שימוש</th></tr></thead><tbody id="tSpecial"></tbody></table></div>
+
+    <h2>אילו משאלות בוחרים</h2>
+    <div class="card" id="cWishes"></div>
+
     <h2>הדמויות</h2>
     <div id="list"></div>
 
     <button id="reload" class="btn" style="margin-top:14px">רענן</button>
-    <p class="note">נספרים רק משחקים עם נקודות. השעות לפי השעון בטלפון שלך. הספירה לפי דמות התחילה ב-24.11.2026, ומשחקים מלפני כן מופיעים בשם "לא ידוע".</p>
+    <p class="note">נספרים רק משחקים עם נקודות. השעות לפי השעון בטלפון שלך. הספירה לפי דמות התחילה ב-24.11.2026, ומשחקים מלפני כן מופיעים בשם "לא ידוע". יכולת ומשאלות נספרות רק ממשחקים מ-24.11.2026 בצהריים והלאה.</p>
   </div>
 </main>
 <script type="module">
@@ -106,6 +115,8 @@ const auth=getAuth(app);
 const URL_Q='https://firestore.googleapis.com/v1/projects/ki-tower/databases/(default)/documents:runQuery';
 const COL={Jacob:'#1aa6a0',Anna:'#ff4f9a',Adam:'#7fd66b',Jonny:'#45c8ff',Lior:'#ff9f1c',Daniella:'#c99cff'};
 const ORDER=['Jacob','Anna','Adam','Jonny','Lior','Daniella'];
+const WORLDS=['Emerald Peaks','Frost Spires','Crystal Hollow','Ember Core','Sea of Clouds','Sky Temple','Starfield','Neon City','Thunder Storm','Black Hole','Pure Energy'];
+const WISH={double:'נקודות כפולות',power:'כוח מקסימלי',shield:'מעגל הגנה',buddy:'דרקון קטן',hijump:'קפיצות גבוהות'};
 const $=id=>document.getElementById(id);
 let rows=[],days=0;
 
@@ -137,7 +148,7 @@ async function load(){
     if(!r.ok)throw new Error(r.status);
     const res=await r.json();rows=[];
     res.forEach(x=>{const d=x&&x.document;if(!d||!d.fields)return;const f=d.fields;
-      rows.push({n:(f.name&&f.name.stringValue)||'?',c:(f.char&&f.char.stringValue)||'',s:num(f.score),fl:num(f.floor),cb:num(f.combo),t:f.ts&&f.ts.timestampValue?Date.parse(f.ts.timestampValue):0});});
+      rows.push({n:(f.name&&f.name.stringValue)||'?',c:(f.char&&f.char.stringValue)||'',s:num(f.score),fl:num(f.floor),cb:num(f.combo),sp:f.sp?num(f.sp):null,w:f.wish?f.wish.stringValue:null,t:f.ts&&f.ts.timestampValue?Date.parse(f.ts.timestampValue):0});});
     draw();
   }catch(e){$('list').innerHTML='<p class="err">לא הצלחתי לטעון. לחץ רענן.</p>';$('kGames').textContent='–';}
 }
@@ -145,6 +156,10 @@ function cols(el,data){
   const mx=Math.max(1,...data.map(d=>d.v));el.textContent='';
   data.forEach(d=>{const c=document.createElement('div');c.innerHTML='<em></em><i></i><small></small>';
     c.querySelector('em').textContent=d.v?d.v:'';c.querySelector('i').style.height=(d.v/mx*100)+'%';c.querySelector('small').textContent=d.l;c.title=d.l+': '+d.v;el.appendChild(c);});
+}
+function hbars(el,items,total){
+  const m=Math.max(1,...items.map(x=>x.v));
+  el.innerHTML=items.length?items.map(x=>'<div class="hbar"><span>'+esc(x.l)+'</span><span class="t"><i style="width:'+(x.v/m*100)+'%"></i></span><span class="n">'+(total?Math.round(x.v/total*100):0)+'%</span></div>').join(''):'<p style="color:var(--mut);margin:0">אין עדיין נתונים</p>';
 }
 function draw(){
   let from=days?Date.now()-days*86400000:0;
@@ -166,6 +181,15 @@ function draw(){
   const fb=B.map(b=>({l:b[1]>=1e9?'1000+':b[0]+'–'+b[1],v:R.filter(r=>r.fl>=b[0]&&r.fl<=b[1]).length}));
   const fm=Math.max(1,...fb.map(x=>x.v));
   $('cFloors').innerHTML=fb.map(x=>'<div class="hbar"><span>'+x.l+'</span><span class="t"><i style="width:'+(x.v/fm*100)+'%"></i></span><span class="n">'+(R.length?Math.round(x.v/R.length*100):0)+'%</span></div>').join('');
+  const wc=WORLDS.map(n=>({l:n,v:0}));R.forEach(r=>{wc[Math.min(10,Math.floor(r.fl/100))].v++;});
+  hbars($('cWorlds'),wc.filter((x,i)=>x.v||i<3),R.length);
+  const RS=R.filter(r=>r.sp!==null&&r.c);const sg={};
+  RS.forEach(r=>{const o=sg[r.c]=sg[r.c]||{n:0,s:0,z:0};o.n++;o.s+=r.sp;if(!r.sp)o.z++;});
+  const sk=ORDER.filter(k=>sg[k]);
+  $('tSpecial').innerHTML=sk.length?sk.map(k=>{const o=sg[k];return '<tr><td>'+k+'</td><td class="num">'+(o.s/o.n).toFixed(1)+'</td><td class="num">'+Math.round(o.z/o.n*100)+'%</td></tr>';}).join(''):'<tr><td colspan="3" style="color:var(--mut)">אין עדיין נתונים</td></tr>';
+  const RW=R.filter(r=>r.w!==null);const wcnt={};let wt=0;
+  RW.forEach(r=>{r.w.split(',').filter(Boolean).forEach(id=>{wcnt[id]=(wcnt[id]||0)+1;wt++;});});
+  hbars($('cWishes'),Object.keys(WISH).map(k=>({l:WISH[k],v:wcnt[k]||0})).filter(x=>wt).sort((a,b)=>b.v-a.v),wt);
   const g={};let tot=0;
   R.forEach(r=>{const k=r.c||'?';const o=g[k]=g[k]||{n:0,best:0,sf:0,cb:0};o.n++;o.sf+=r.fl;if(r.s>o.best)o.best=r.s;if(r.cb>o.cb)o.cb=r.cb;tot++;});
   ORDER.forEach(k=>{if(!g[k])g[k]={n:0,best:0,sf:0,cb:0};});
