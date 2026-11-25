@@ -286,7 +286,7 @@ function addPlat(){
 function newHero(){return {x:W/2,y:0,vx:0,vy:0,on:true,dir:1,ph:0,sq:0,coy:7,trans:0,win:0,flip:false,fAge:0,fDur:1,flipAng:0,landAng:0,boosted:false,airT:0,tailT:0};}
 function reset(){
   plats=[];for(var i=0;i<=14;i++)addPlat();
-  P=newHero();
+  P=newHero();godHold=false;godSpd=0;
   cam=-(H-110);parts=[];pops=[];trail=[];shk=0;
   floorsBest=0;lastFloor=0;score=0;combo=0;comboT=0;bestCombo=0;tier=0;started=false;fs=0;jumpBuf=0;
   orbsWorld=[];lastOrbFloor=0;wishPower=false;wishShield=false;hiJump=1;dblUntil=0;magnet=false;buddy=null;celebT=0;abCD=0;specBuf=0;monkeyT=0;monkeyDir=1;vineT=0;cloudT=0;dashT=0;cling=0;monkeyN=0;wingT=0;wingJ=false;clingK='';catN=0;spN=0;gWish=[];spOk=0;spPend=[];playF=0;fly=null;clone=null;tinyT=0;giantT=0;triple=false;
@@ -372,7 +372,7 @@ function celebrate(){
 }
 function scrollSpeed(){var f=floorsBest;return f<=200?0.7+f*0.0095:2.6+Math.min(0.5,(f-200)*0.0012);}
 function die(){
-  endCombo();state='over';sfx.down();overReady=false;vib([80,60,120]);syncTop();
+  endCombo();state='over';godHold=false;godSpd=0;sfx.down();overReady=false;vib([80,60,120]);syncTop();
   var entry=null,rank=-1;
   if(score>0&&!isGod()){
     entry={id:Date.now(),name:playerName,score:score,floor:floorsBest,combo:bestCombo};

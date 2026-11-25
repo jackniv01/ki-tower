@@ -44,6 +44,10 @@ input.bad{border-color:#ff5d73;box-shadow:0 0 calc(var(--u)*10) rgba(255,93,115,
 .chars{display:flex;gap:calc(var(--u)*4);justify-content:space-between}
 .char{width:calc(var(--u)*50);box-sizing:border-box;padding:calc(var(--u)*4) 0 calc(var(--u)*5);border:calc(var(--u)*2) solid rgba(255,255,255,.22);border-radius:calc(var(--u)*12) calc(var(--u)*3) calc(var(--u)*12) calc(var(--u)*3);background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.02));color:#9fb4d6;font-family:'Bangers',Impact,sans-serif;font-size:calc(var(--u)*14);letter-spacing:calc(var(--u)*0.5);display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*2);cursor:pointer;transition:transform .12s}
 .char canvas{width:calc(var(--u)*44);height:calc(var(--u)*62)}
+.char{flex:1 1 0;min-width:0;max-width:calc(var(--u)*50)}
+.char canvas{max-width:100%;object-fit:contain}
+.char span{max-width:100%;overflow:hidden;white-space:nowrap}
+.char span.long{font-size:calc(var(--u)*10.5);letter-spacing:0}
 .char.sel{border-color:var(--gold);background:linear-gradient(180deg,rgba(255,213,61,.3),rgba(255,120,60,.08));color:var(--gold);transform:translateY(calc(var(--u)*-3));box-shadow:0 0 calc(var(--u)*14) rgba(255,213,61,.5)}
 .char:focus-visible{outline:calc(var(--u)*3) solid #fff}
 .board{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:calc(var(--u)*3)}
@@ -103,7 +107,7 @@ input[type=range]{flex:1;max-width:calc(var(--u)*170);height:calc(var(--u)*30);b
 .gate.art{background:none;border:none;box-shadow:none}
 .gate .gimg{position:absolute;background-repeat:no-repeat;opacity:.68;pointer-events:none}
 .gate.art b,.gate.art small{position:relative;text-shadow:0 0 calc(var(--u)*4) #000,0 0 calc(var(--u)*8) rgba(20,8,50,.9)}
-.gateX{position:absolute;top:calc(var(--u)*14);right:calc(var(--u)*14);width:calc(var(--u)*36);height:calc(var(--u)*36);border-radius:50%;border:calc(var(--u)*1.5) solid rgba(224,200,255,.5);background:rgba(20,14,48,.6);color:#fff;font-size:calc(var(--u)*16);cursor:pointer}
+.gateX{position:absolute;top:calc(var(--u)*12);left:50%;margin-left:calc(var(--u)*-18);width:calc(var(--u)*36);height:calc(var(--u)*36);border-radius:50%;border:calc(var(--u)*1.5) solid rgba(224,200,255,.5);background:rgba(20,14,48,.6);color:#fff;font-size:calc(var(--u)*16);cursor:pointer}
 @keyframes gin{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
 @keyframes sppulse{0%,100%{box-shadow:0 0 0 calc(var(--u)*2) var(--ink),0 0 calc(var(--u)*6) var(--c)}50%{box-shadow:0 0 0 calc(var(--u)*2) var(--ink),0 0 calc(var(--u)*22) var(--c)}}
 .big #pad{height:156px}

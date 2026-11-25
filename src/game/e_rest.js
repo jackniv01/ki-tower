@@ -117,7 +117,7 @@ function selectChar(i){
 CH.forEach(function(c,i){
   var b=document.createElement('button');b.className='char';b.type='button';b.setAttribute('aria-label',c.name);
   var cnv=document.createElement('canvas');cnv.width=120;cnv.height=168;
-  var sp=document.createElement('span');sp.textContent=c.name;
+  var sp=document.createElement('span');sp.textContent=c.name;if(c.name.length>7)sp.className='long';
   b.appendChild(cnv);b.appendChild(sp);
   b.addEventListener('click',function(){selectChar(i);});if(!charOK(i))b.style.display='none';
   charsEl.appendChild(b);prev.push({btn:b,cv:cnv});
@@ -271,7 +271,7 @@ function stepOrbs(){
     var o=orbsWorld[i];if(o.got)continue;
     var dx=P.x-o.x,dy=(P.y-34)-o.y;
     if(magnet||(buddy&&!buddy.leave)){var dd=Math.sqrt(dx*dx+dy*dy);if(dd<200&&dd>1){var pull=Math.min(dd,6);o.x+=dx/dd*pull;o.y+=dy/dd*pull;dx=P.x-o.x;dy=(P.y-34)-o.y;}}
-    if(dx*dx+dy*dy<34*34){
+    if(dx*dx+dy*dy<34*34||(godSpd>0&&Math.abs(dx)<34&&dy<0&&dy>-godSpd-34)){
       o.got=true;if(buddy&&!buddy.leave)DRG.happy=60;orbsSaved.push(o.num);saveOrbs();sfx.combo(10);
       for(var k=0;k<14;k++){var a=Math.random()*Math.PI*2,s=rnd(1,3.5);spawn('spark',o.x,o.y,Math.cos(a)*s,Math.sin(a)*s,rnd(20,36),rnd(2.5,4),'#ff4a4a');}
       spawn('ring',o.x,o.y,0,0,24,6,'#ff4a4a');
@@ -447,7 +447,7 @@ function buildWishList(){
   });
 }
 function startWish(){
-  buildWishList();state='wish';wishPhase=0;wt=0;wLine=0;wTyped=0;wChosen=null;keys.l=false;keys.r=false;jumpBuf=0;
+  godHold=false;godSpd=0;buildWishList();state='wish';wishPhase=0;wt=0;wLine=0;wTyped=0;wChosen=null;keys.l=false;keys.r=false;jumpBuf=0;
   wLines=['Seven stars shine as one. Who has called me from the clouds?','I am Aurelis, keeper of this tower. Your climb has earned a wish.','Choose well, climber. I grant only one.'];
   sfx.power();
 }
@@ -711,8 +711,8 @@ function giantScale(){var k=Math.min(1,giantT/20,(1200-giantT)/20);return 1+0.6*
 function ensurePlats(f){while(plats.length<=f+16)addPlat();}
 function flyFloors(){
   var f=Math.max(0,Math.floor(-P.y/SP));
-  if(f>floorsBest){score+=(f-floorsBest)*10*mul();floorsBest=f;while(spPend.length&&floorsBest>=spPend[0]){spPend.shift();spOk++;}
-    if(f%10===0&&f!==1000){pushPop('Floor '+f+'!',P.x,P.y-105,'#ffd53d',30);}if(f===1000)celebrate();}
+  if(f>floorsBest){var fb0=floorsBest;score+=(f-floorsBest)*10*mul();floorsBest=f;while(spPend.length&&floorsBest>=spPend[0]){spPend.shift();spOk++;}
+    if(f%10===0&&f!==1000){pushPop('Floor '+f+'!',P.x,P.y-105,'#ffd53d',30);}if(fb0<1000&&f>=1000)celebrate();}
   lastFloor=floorsBest;
 }
 function sfxRocket(){if(muted||!actx())return;noiz(1.6,0.13,'lowpass',260,0,0,3000);note(70,1.6,'sawtooth',0.06,520);note(140,1.2,'square',0.025,900,0.1);}
