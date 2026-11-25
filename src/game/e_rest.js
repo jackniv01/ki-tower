@@ -117,7 +117,7 @@ function selectChar(i){
 CH.forEach(function(c,i){
   var b=document.createElement('button');b.className='char';b.type='button';b.setAttribute('aria-label',c.name);
   var cnv=document.createElement('canvas');cnv.width=120;cnv.height=168;
-  var sp=document.createElement('span');sp.textContent=c.name;
+  var sp=document.createElement('span');sp.textContent=c.name;if(c.name.length>7)sp.className='long';
   b.appendChild(cnv);b.appendChild(sp);
   b.addEventListener('click',function(){selectChar(i);});if(!charOK(i))b.style.display='none';
   charsEl.appendChild(b);prev.push({btn:b,cv:cnv});
